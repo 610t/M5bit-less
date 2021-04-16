@@ -164,6 +164,9 @@ void setup() {
   M5.begin();
   M5.IMU.Init(); // IMU for temperature, accel and gyro
 
+  M5.Lcd.begin();
+  M5.Lcd.setTextSize(2);
+
   MSG("BLE start.");
   m5.Speaker.mute();
 
