@@ -1,5 +1,6 @@
 #define M5STACK_MPU6886
 #include <M5Stack.h>
+#include "utility/MahonyAHRS.h"
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
@@ -129,11 +130,17 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
       float ax, ay, az;
       int16_t gx, gy, gz;
+      float pitch , roll, yaw;
       M5.IMU.getAccelData(&ax, &ay, &az); // get accel
       M5.IMU.getGyroAdc(&gx, &gy, &gz);   // get gyro
+      MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
 
       // Now send fixed accelerometer related values
       MSG("MOTION read " + String((char *)motion));
+      motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
+      motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
+      motion[2] = ((int)(roll * ACC_MULT) & 0xff);
+      motion[3] = (((int)(roll * ACC_MULT) >> 8 ) & 0xff);
       motion[4] = ((int)(ax * ACC_MULT) & 0xff);
       motion[5] = (((int)(ax * ACC_MULT) >> 8 ) & 0xff);
       motion[6] = ((int)(ay * ACC_MULT) & 0xff);
