@@ -124,10 +124,22 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 };
 
 // for accelerometer related values
+#define ACC_MULT 1000
 class MotionCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
+      float ax, ay, az;
+      int16_t gx, gy, gz;
+      M5.IMU.getAccelData(&ax, &ay, &az); // get accel
+      M5.IMU.getGyroAdc(&gx, &gy, &gz);   // get gyro
+
       // Now send fixed accelerometer related values
       MSG("MOTION read " + String((char *)motion));
+      motion[4] = ((int)(ax * ACC_MULT) & 0xff);
+      motion[5] = (((int)(ax * ACC_MULT) >> 8 ) & 0xff);
+      motion[6] = ((int)(ay * ACC_MULT) & 0xff);
+      motion[7] = (((int)(ay * ACC_MULT) >> 8 ) & 0xff);
+      motion[8] = ((int)(az * ACC_MULT) & 0xff);
+      motion[9] = (((int)(az * ACC_MULT) >> 8 ) & 0xff);
       pCharacteristic->setValue(motion, 20);
     }
 };
