@@ -1,3 +1,4 @@
+#define M5STACK_MPU6886
 #include <M5Stack.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -110,9 +111,12 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 // for state
 class StateCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      // Now send random sensor values.
+      float temp = 0;
+      M5.IMU.getTempData(&temp); // get temperature from IMU
+
+      // Now send random sensor values, lightlevel & soundlevel.
       state[4] = (random(256) & 0xff); // lightlevel
-      state[5] = (random(256) & 0xff); // temperature(+128)
+      state[5] = ((int)(temp + 128) & 0xff); // temperature(+128)
       state[6] = (random(256) & 0xff); // soundlevel
       MSG("STATE read " + String((char *)state));
       pCharacteristic->setValue(state, 7);
@@ -139,6 +143,8 @@ class ActionCallbacks: public BLECharacteristicCallbacks {
 void setup() {
   Serial.begin(115200);
   M5.begin();
+  M5.IMU.Init(); // IMU for temperature, accel and gyro
+
   MSG("BLE start.");
   m5.Speaker.mute();
 
