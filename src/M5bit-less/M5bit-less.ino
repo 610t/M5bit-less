@@ -76,6 +76,18 @@ class MyServerCallbacks: public BLEServerCallbacks {
 };
 
 // for cmd
+// for pixel pattern
+uint16_t pixel[5][5] = {0};
+
+void displayShowPixel() {
+  for (int y = 0; y < 5; y++) {
+    for (int x = 0; x < 5; x++) {
+      Serial.print(pixel[y][x] & 0b1);
+    }
+    Serial.println();
+  }
+};
+
 class CmdCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
       MSG("CMD read");
@@ -117,15 +129,25 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           // TEXT     0x01
           MSG(">> text");
           MSG(&(cmd_str[1]));
-          M5.Lcd.setCursor(0,0);
+          M5.Lcd.setCursor(0, 0);
           M5.Lcd.println(&(cmd_str[1]));
         } else if (cmd_display == 0x02) {
           // PIXELS_0 0x02
           MSG(">> pixel0");
-          M5.Lcd.fillScreen(BLACK); // dummy for clean-up display
+          for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 5; x++) {
+              pixel[y][x] = (cmd_str[y * 5 + (x + 1)] & 0xb);
+            }
+          }
         } else if (cmd_display == 0x03) {
           // PIXELS_1 0x03
           MSG(">> pixel1");
+          for (int y = 3; y < 5; y++) {
+            for (int x = 0; x < 5; x++) {
+              pixel[y][x] = (cmd_str[(y - 3) * 5 + (x + 1)] & 0xb);
+            }
+          }
+          displayShowPixel();
         }
       }
     }
