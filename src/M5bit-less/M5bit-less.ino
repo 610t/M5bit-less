@@ -77,12 +77,26 @@ class MyServerCallbacks: public BLEServerCallbacks {
 
 // for cmd
 // for pixel pattern
+#define TEXT_SPACE 30
 uint16_t pixel[5][5] = {0};
+
+void drawPixel(int x, int y, int c) {
+  int w = M5.Lcd.width();
+  int h = M5.Lcd.height();
+  int ps = (w < (h - TEXT_SPACE)) ? w / 5 : h / 5; // Pixel size
+
+  if (c) {
+    M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, WHITE);
+  } else {
+    M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, BLACK);
+  }
+};
 
 void displayShowPixel() {
   for (int y = 0; y < 5; y++) {
     for (int x = 0; x < 5; x++) {
       Serial.print(pixel[y][x] & 0b1);
+      drawPixel(x, y, pixel[y][x] & 0b1);
     }
     Serial.println();
   }
@@ -209,7 +223,7 @@ void setup() {
   M5.IMU.Init(); // IMU for temperature, accel and gyro
 
   M5.Lcd.begin();
-  M5.Lcd.setTextSize(2);
+  M5.Lcd.setTextSize(4);
   M5.Lcd.fillScreen(BLACK);
 
   MSG("BLE start.");
