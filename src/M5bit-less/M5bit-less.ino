@@ -6,7 +6,8 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 
-#define MSG(msg)  {M5.Lcd.println(msg);Serial.println(msg);}
+#define MSG(msg)  {Serial.println(msg);}
+//#define MSG(msg)  {M5.Lcd.println(msg);Serial.println(msg);}
 
 #define MBIT_MORE_SERVICE          "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
 #define MBIT_MORE_CH_COMMAND       "0b500100-607f-4151-9091-7d008d6ffc5c" // R&W(20byte)
@@ -93,11 +94,6 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
       // SET_SERVO  0x03
       // SET_PULL   0x04
       // SET_EVENT  0x05
-      //// CMD_DISPLAY  0x02
-      // CLEAR    0x00
-      // TEXT     0x01
-      // PIXELS_0 0x02
-      // PIXELS_1 0x03
       //// CMD_AUDIO  0x03
       // STOP_TONE  0x00
       // PLAY_TONE  0x01
@@ -106,6 +102,32 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
       std::string value = pCharacteristic->getValue();
       MSG("CMD len:" + String(value.length()));
       MSG(value.c_str());
+      const char *cmd_str = value.c_str();
+      MSG(cmd_str);
+      char cmd = (cmd_str[0] >> 5);
+      if (cmd == 0x02) {
+        //// CMD_DISPLAY  0x02
+        MSG("CMD display");
+        char cmd_display = cmd_str[0] & 0b11111;
+        if (cmd_display == 0x00) {
+          // CLEAR    0x00
+          MSG(">> clear");
+          M5.Lcd.fillScreen(BLACK);
+        } else if (cmd_display == 0x01) {
+          // TEXT     0x01
+          MSG(">> text");
+          MSG(&(cmd_str[1]));
+          M5.Lcd.setCursor(0,0);
+          M5.Lcd.println(&(cmd_str[1]));
+        } else if (cmd_display == 0x02) {
+          // PIXELS_0 0x02
+          MSG(">> pixel0");
+          M5.Lcd.fillScreen(BLACK); // dummy for clean-up display
+        } else if (cmd_display == 0x03) {
+          // PIXELS_1 0x03
+          MSG(">> pixel1");
+        }
+      }
     }
 };
 
@@ -166,6 +188,7 @@ void setup() {
 
   M5.Lcd.begin();
   M5.Lcd.setTextSize(2);
+  M5.Lcd.fillScreen(BLACK);
 
   MSG("BLE start.");
   m5.Speaker.mute();
