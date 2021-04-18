@@ -75,6 +75,16 @@ class MyServerCallbacks: public BLEServerCallbacks {
     }
 };
 
+// dummy callback
+class DummyCallbacks: public BLECharacteristicCallbacks {
+    void onRead(BLECharacteristic * pCharacteristic) {
+      MSG("DUMMY Read");
+    }
+    void onWrite(BLECharacteristic * pCharacteristic) {
+      MSG("DUMMY Write");
+    }
+};
+
 // for cmd
 // for pixel pattern
 #define TEXT_SPACE 30
@@ -120,9 +130,6 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
       // SET_SERVO  0x03
       // SET_PULL   0x04
       // SET_EVENT  0x05
-      //// CMD_AUDIO  0x03
-      // STOP_TONE  0x00
-      // PLAY_TONE  0x01
       //// CMD_DATA (only v2) 0x04
 
       std::string value = pCharacteristic->getValue();
@@ -162,6 +169,17 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
             }
           }
           displayShowPixel();
+        }
+      } else if (cmd == 0x03) {
+        //// CMD_AUDIO  0x03
+        MSG("CMD audio");
+        char cmd_audio = cmd_str[0] & 0b11111;
+        if (cmd_audio == 0x00) {
+          // STOP_TONE  0x00
+          MSG(">> Stop tone");
+        } else if (cmd_audio == 0x01) {
+          // PLAY_TONE  0x01
+          MSG(">> Play tone");
         }
       }
     }
@@ -265,6 +283,8 @@ void setup() {
                          BLECharacteristic::PROPERTY_READ |
                          BLECharacteristic::PROPERTY_NOTIFY
                        );
+  pCharacteristic[3]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[3]->addDescriptor(new BLE2902());
 
   // ACTION
   pCharacteristic[4] = pService->createCharacteristic(
@@ -280,20 +300,33 @@ void setup() {
                          MBIT_MORE_CH_ANALOG_IN_P0,
                          BLECharacteristic::PROPERTY_READ
                        );
+  pCharacteristic[5]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[5]->addDescriptor(new BLE2902());
+
   pCharacteristic[6] = pService->createCharacteristic(
                          MBIT_MORE_CH_ANALOG_IN_P1,
                          BLECharacteristic::PROPERTY_READ
                        );
+  pCharacteristic[6]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[6]->addDescriptor(new BLE2902());
+
+
   pCharacteristic[7] = pService->createCharacteristic(
                          MBIT_MORE_CH_ANALOG_IN_P2,
                          BLECharacteristic::PROPERTY_READ
                        );
+  pCharacteristic[7]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[7]->addDescriptor(new BLE2902());
+
 
   // MESSAGE (only for v2)
   pCharacteristic[8] = pService->createCharacteristic(
                          MBIT_MORE_CH_MESSAGE,
                          BLECharacteristic::PROPERTY_READ
                        );
+  pCharacteristic[8]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[8]->addDescriptor(new BLE2902());
+
 
   pService->start();
   BLEAdvertising *pAdvertising = pServer->getAdvertising();
