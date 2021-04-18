@@ -250,7 +250,7 @@ void setup() {
   BLEDevice::init("BBC micro:bit [m5scr]");
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
-  BLEService *pService = pServer->createService(MBIT_MORE_SERVICE);
+  BLEService *pService = pServer->createService(BLEUUID(MBIT_MORE_SERVICE), 27);
 
   // CMD
   pCharacteristic[0] = pService->createCharacteristic(
