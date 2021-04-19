@@ -153,6 +153,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           // TEXT     0x01
           MSG(">> text");
           MSG(&(cmd_str[1]));
+          M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
           M5.Lcd.setCursor(0, 0);
           M5.Lcd.println(&(cmd_str[1]));
         } else if (cmd_display == 0x02) {
@@ -265,8 +266,8 @@ void setup() {
     ID += ID_char;
   }
   MSG("ID char:" + ID);
-  char adv_str[32]={0};
-  String("BBC micro:bit [" + ID + "]").toCharArray(adv_str,sizeof(adv_str));
+  char adv_str[32] = {0};
+  String("BBC micro:bit [" + ID + "]").toCharArray(adv_str, sizeof(adv_str));
 
   M5.Lcd.begin();
   M5.Lcd.fillScreen(BLACK);
