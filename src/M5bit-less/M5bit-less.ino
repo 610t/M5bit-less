@@ -177,9 +177,22 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         if (cmd_audio == 0x00) {
           // STOP_TONE  0x00
           MSG(">> Stop tone");
+          M5.Speaker.mute();
         } else if (cmd_audio == 0x01) {
           // PLAY_TONE  0x01
+          const uint8_t max_volume = 5;
           MSG(">> Play tone");
+          uint32_t duration = (cmd_str[4] & 0xff) << 24
+                              | (cmd_str[3] & 0xff) << 16
+                              | (cmd_str[2] & 0xff) << 8
+                              | (cmd_str[1] & 0xff);
+          uint16_t freq = 1000000 / duration;
+          uint8_t volume = (uint8_t)(max_volume * cmd_str[5] / 255.0);
+          MSG("Volume:" + String(volume));
+          MSG("Duration:" + String(duration));
+          MSG("Freq:" + String(freq));
+          M5.Speaker.setVolume(volume);
+          M5.Speaker.tone(freq);
         }
       }
     }
