@@ -19,6 +19,7 @@
 #define MBIT_MORE_CH_ANALOG_IN_P1  "0b500121-607f-4151-9091-7d008d6ffc5c" // R
 #define MBIT_MORE_CH_ANALOG_IN_P2  "0b500122-607f-4151-9091-7d008d6ffc5c" // R
 #define MBIT_MORE_CH_MESSAGE       "0b500130-607f-4151-9091-7d008d6ffc5c" // R : only for v2
+#define ADVERTISING_STRING         "BBC micro:bit [m5scr]"
 
 // COMMAND CH 20byte
 uint8_t cmd[] = {0x01, // microbit version (v1:0x01, v2:0x02)
@@ -67,6 +68,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer * pServer) {
       MSG("connect");
       deviceConnected = true;
+      M5.Lcd.fillScreen(BLACK);
     };
 
     void onDisconnect(BLEServer * pServer) {
@@ -254,13 +256,18 @@ void setup() {
   M5.IMU.Init(); // IMU for temperature, accel and gyro
 
   M5.Lcd.begin();
-  M5.Lcd.setTextSize(4);
   M5.Lcd.fillScreen(BLACK);
+  // Start up screen
+  M5.Lcd.setTextSize(3);
+  M5.Lcd.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.println(String(ADVERTISING_STRING));
+  M5.Lcd.setTextSize(4);
 
   MSG("BLE start.");
   m5.Speaker.mute();
 
-  BLEDevice::init("BBC micro:bit [m5scr]");
+  BLEDevice::init(ADVERTISING_STRING);
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
   BLEService *pService = pServer->createService(BLEUUID(MBIT_MORE_SERVICE), 27);
