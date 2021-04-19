@@ -2,6 +2,14 @@
 [M5bit Less](https://scrapbox.io/M5S/M5bit_Less)は、[Microbit More](https://microbit-more.github.io/)をM5Stackで使うためのM5Stack用プログラムです。
 Arduino IDEで作成しています。
 
+## サポートしている機能
+- つながったときイベントブロック
+- AとBボタンのクリック(下がったときと上がったときは未実装)
+- 文字列の表示
+- パターンの表示
+- 音の出力
+- 加速度の入力(MPU6886ユニット(M5Stack用6軸IMUユニットなど)が必要)
+
 # どうやって使うの?
 ## M5Stack側の準備
 [src/M5bit-less/M5bit-less.ino](src/M5bit-less/M5bit-less.ino)をArduino IDEからコンパイルして、M5Stackにダウンロードします。
@@ -16,7 +24,6 @@ Microbit Moreは、[stretch3](https://stretch3.github.io/)などで拡張機能�
 # TODO
 ## 実装可能だか未実装の項目
 以下の項目は実装可能ですが、まだ実装していないものです。
-- 音声の出力(入力は(標準では)マイクが無いため実装できない)
 - ラベルとデータを使ったメッセージのやりとり
 - ピンへの入出力(GPIO, PWM, ADC, Servoなど)
 
@@ -24,3 +31,4 @@ Microbit Moreは、[stretch3](https://stretch3.github.io/)などで拡張機能�
 以下の項目は、M5Stackに対応するセンサーなどが標準では無いため、実装できていません。
 - 明るさセンサーの対応
 - 磁力に関する機能(北からの角度などを含む)
+- 音声入力((標準では)マイクが無いため)
