@@ -255,19 +255,30 @@ void setup() {
   M5.begin();
   M5.IMU.Init(); // IMU for temperature, accel and gyro
 
+  // Create MAC address base fixed ID
+  uint8_t mac0[6];
+  esp_efuse_mac_get_default(mac0);
+  String ID;
+  for (int i = 0; i < 6; i++) {
+    char ID_char = (((mac0[i] - 0x61) & 0b0011110) >> 1) + 0x61;
+    ID += ID_char;
+  }
+  MSG("ID char:" + ID);
+  char adv_str[32]={0};
+  String("BBC micro:bit [" + ID + "]").toCharArray(adv_str,sizeof(adv_str));
+
   M5.Lcd.begin();
   M5.Lcd.fillScreen(BLACK);
   // Start up screen
-  M5.Lcd.setTextSize(3);
-  M5.Lcd.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
   M5.Lcd.setTextSize(2);
-  M5.Lcd.println(String(ADVERTISING_STRING));
+  M5.Lcd.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
+  M5.Lcd.println(adv_str);
   M5.Lcd.setTextSize(4);
 
   MSG("BLE start.");
   m5.Speaker.mute();
 
-  BLEDevice::init(ADVERTISING_STRING);
+  BLEDevice::init(adv_str);
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
   BLEService *pService = pServer->createService(BLEUUID(MBIT_MORE_SERVICE), 27);
