@@ -230,7 +230,7 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
 
       // Now send fixed accelerometer related values
-      MSGLN("MOTION read " + String((char *)motion));
+      MSG("MOTION read:");
       motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
       motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
       motion[2] = ((int)(roll * ACC_MULT) & 0xff);
@@ -242,6 +242,13 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       motion[8] = ((int)(-az * ACC_MULT) & 0xff);
       motion[9] = (((int)(-az * ACC_MULT) >> 8 ) & 0xff);
       pCharacteristic->setValue(motion, 20);
+
+      // debug print
+      char msg[256] = {0};
+      for (int i = 0; i < sizeof(motion); i++) {
+        sprintf(&msg[i * 3], "%02x,", motion[i], sizeof(motion) * 3 - 3 * i);
+      }
+      MSGLN(msg);
     }
 };
 
