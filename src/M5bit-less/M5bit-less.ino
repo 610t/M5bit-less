@@ -235,8 +235,8 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
       motion[2] = ((int)(roll * ACC_MULT) & 0xff);
       motion[3] = (((int)(roll * ACC_MULT) >> 8 ) & 0xff);
-      motion[4] = ((int)(-ax * ACC_MULT) & 0xff);
-      motion[5] = (((int)(-ax * ACC_MULT) >> 8 ) & 0xff);
+      motion[4] = ((int)(ax * ACC_MULT) & 0xff);
+      motion[5] = (((int)(ax * ACC_MULT) >> 8 ) & 0xff);
       motion[6] = ((int)(ay * ACC_MULT) & 0xff);
       motion[7] = (((int)(ay * ACC_MULT) >> 8 ) & 0xff);
       motion[8] = ((int)(-az * ACC_MULT) & 0xff);
