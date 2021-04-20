@@ -6,8 +6,9 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 
-#define MSG(msg)  {Serial.println(msg);}
-//#define MSG(msg)  {M5.Lcd.println(msg);Serial.println(msg);}
+#define MSG(msg)  {Serial.print(msg);}
+#define MSGLN(msg)  {Serial.println(msg);}
+#define MSGF(msg)  {Serial.printf(msg);}
 
 #define MBIT_MORE_SERVICE          "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
 #define MBIT_MORE_CH_COMMAND       "0b500100-607f-4151-9091-7d008d6ffc5c" // R&W(20byte)
@@ -66,13 +67,13 @@ bool deviceConnected = false;
 
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer * pServer) {
-      MSG("connect");
+      MSGLN("connect");
       deviceConnected = true;
       M5.Lcd.fillScreen(BLACK);
     };
 
     void onDisconnect(BLEServer * pServer) {
-      MSG("disconnect");
+      MSGLN("disconnect");
       deviceConnected = false;
       setup();
     }
@@ -81,10 +82,10 @@ class MyServerCallbacks: public BLEServerCallbacks {
 // dummy callback
 class DummyCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      MSG("DUMMY Read");
+      MSGLN("DUMMY Read");
     }
     void onWrite(BLECharacteristic * pCharacteristic) {
-      MSG("DUMMY Write");
+      MSGLN("DUMMY Write");
     }
 };
 
@@ -117,12 +118,12 @@ void displayShowPixel() {
 
 class CmdCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      MSG("CMD read");
+      MSGLN("CMD read");
       pCharacteristic->setValue(cmd, 20);
     }
 
     void onWrite(BLECharacteristic * pCharacteristic) {
-      MSG("CMD write");
+      MSGLN("CMD write");
       ////// MUST implement!!
       //// CMD_CONFIG 0x00
       // MIC    0x01
@@ -136,29 +137,29 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
       //// CMD_DATA (only v2) 0x04
 
       std::string value = pCharacteristic->getValue();
-      MSG("CMD len:" + String(value.length()));
-      MSG(value.c_str());
+      MSGLN("CMD len:" + String(value.length()));
+      MSGLN(value.c_str());
       const char *cmd_str = value.c_str();
-      MSG(cmd_str);
+      MSGLN(cmd_str);
       char cmd = (cmd_str[0] >> 5);
       if (cmd == 0x02) {
         //// CMD_DISPLAY  0x02
-        MSG("CMD display");
+        MSGLN("CMD display");
         char cmd_display = cmd_str[0] & 0b11111;
         if (cmd_display == 0x00) {
           // CLEAR    0x00
-          MSG(">> clear");
+          MSGLN(">> clear");
           M5.Lcd.fillScreen(BLACK);
         } else if (cmd_display == 0x01) {
           // TEXT     0x01
-          MSG(">> text");
-          MSG(&(cmd_str[1]));
+          MSGLN(">> text");
+          MSGLN(&(cmd_str[1]));
           M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
           M5.Lcd.setCursor(0, 0);
           M5.Lcd.println(&(cmd_str[1]));
         } else if (cmd_display == 0x02) {
           // PIXELS_0 0x02
-          MSG(">> pixel0");
+          MSGLN(">> pixel0");
           for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 5; x++) {
               pixel[y][x] = (cmd_str[y * 5 + (x + 1)] & 0xb);
@@ -166,7 +167,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           }
         } else if (cmd_display == 0x03) {
           // PIXELS_1 0x03
-          MSG(">> pixel1");
+          MSGLN(">> pixel1");
           for (int y = 3; y < 5; y++) {
             for (int x = 0; x < 5; x++) {
               pixel[y][x] = (cmd_str[(y - 3) * 5 + (x + 1)] & 0xb);
@@ -176,25 +177,25 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         }
       } else if (cmd == 0x03) {
         //// CMD_AUDIO  0x03
-        MSG("CMD audio");
+        MSGLN("CMD audio");
         char cmd_audio = cmd_str[0] & 0b11111;
         if (cmd_audio == 0x00) {
           // STOP_TONE  0x00
-          MSG(">> Stop tone");
+          MSGLN(">> Stop tone");
           M5.Speaker.mute();
         } else if (cmd_audio == 0x01) {
           // PLAY_TONE  0x01
           const uint8_t max_volume = 5;
-          MSG(">> Play tone");
+          MSGLN(">> Play tone");
           uint32_t duration = (cmd_str[4] & 0xff) << 24
                               | (cmd_str[3] & 0xff) << 16
                               | (cmd_str[2] & 0xff) << 8
                               | (cmd_str[1] & 0xff);
           uint16_t freq = 1000000 / duration;
           uint8_t volume = (uint8_t)(max_volume * cmd_str[5] / 255.0);
-          MSG("Volume:" + String(volume));
-          MSG("Duration:" + String(duration));
-          MSG("Freq:" + String(freq));
+          MSGLN("Volume:" + String(volume));
+          MSGLN("Duration:" + String(duration));
+          MSGLN("Freq:" + String(freq));
           M5.Speaker.setVolume(volume);
           M5.Speaker.tone(freq);
         }
@@ -212,7 +213,7 @@ class StateCallbacks: public BLECharacteristicCallbacks {
       state[4] = (random(256) & 0xff); // lightlevel
       state[5] = ((int)(temp + 128) & 0xff); // temperature(+128)
       state[6] = (random(256) & 0xff); // soundlevel
-      MSG("STATE read " + String((char *)state));
+      MSGLN("STATE read " + String((char *)state));
       pCharacteristic->setValue(state, 7);
     }
 };
@@ -229,7 +230,7 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
 
       // Now send fixed accelerometer related values
-      MSG("MOTION read " + String((char *)motion));
+      MSGLN("MOTION read " + String((char *)motion));
       motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
       motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
       motion[2] = ((int)(roll * ACC_MULT) & 0xff);
@@ -247,7 +248,7 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
 // for button
 class ActionCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      MSG("BTN read");
+      MSGLN("BTN read");
       pCharacteristic->setValue("Read me!!"); // dummy data
     }
 };
@@ -265,7 +266,7 @@ void setup() {
     char ID_char = (((mac0[i] - 0x61) & 0b0011110) >> 1) + 0x61;
     ID += ID_char;
   }
-  MSG("ID char:" + ID);
+  MSGLN("ID char:" + ID);
   char adv_str[32] = {0};
   String("BBC micro:bit [" + ID + "]").toCharArray(adv_str, sizeof(adv_str));
 
@@ -277,7 +278,7 @@ void setup() {
   M5.Lcd.println(adv_str);
   M5.Lcd.setTextSize(4);
 
-  MSG("BLE start.");
+  MSGLN("BLE start.");
   m5.Speaker.mute();
 
   BLEDevice::init(adv_str);
@@ -378,14 +379,14 @@ void loop() {
     // Send notify data for button A & B.
     // Now support click only
     if (M5.BtnA.wasPressed()) {
-      MSG("Button A clicked!");
+      MSGLN("Button A clicked!");
       action[1] = 0x01; // Button A
       action[3] = 0x03; // Button CLICK
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
     if (M5.BtnB.wasPressed()) {
-      MSG("Button B clicked!");
+      MSGLN("Button B clicked!");
       action[1] = 0x02; // Button B
       action[3] = 0x03; // Button CLICK
       pCharacteristic[4]->setValue(action, 20);
