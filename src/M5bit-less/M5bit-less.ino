@@ -399,6 +399,13 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
+    if (M5.BtnC.wasPressed()) {
+      MSGLN("Button C (LOGO) clicked!");
+      action[1] = 121; // LOGO 121
+      action[3] = 0x03; // Button CLICK
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    }
   }
   M5.update();
 }
