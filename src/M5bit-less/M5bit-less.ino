@@ -100,7 +100,7 @@ void drawPixel(int x, int y, int c) {
   int ps = (w < (h - TEXT_SPACE)) ? w / 5 : h / 5; // Pixel size
 
   if (c) {
-    M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, WHITE);
+    M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, RED);
   } else {
     M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, BLACK);
   }
