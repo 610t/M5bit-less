@@ -4,13 +4,26 @@
 [M5bit Less](https://scrapbox.io/M5S/M5bit_Less)は、[Microbit More](https://microbit-more.github.io/)をM5Stackで使うためのM5Stack用プログラムです。
 Arduino IDEで作成しています。
 
+## サポートしている機種
+以下の機種で動くことを確認していますが、全てで同じ機能がサポートされているわけではありません。
+詳しくは、サポートしている機能の表を参照してください。
+- M5Stack Basic
+- M5Stack Gray
+- M5StickC
+
 ## サポートしている機能
 - つながったときイベントブロック
 - AとBボタンのクリック、下がったとき、上がったとき
 - 文字列の表示
 - パターンの表示
 - 音の出力
-- 加速度の入力(IMUを持つM5Stack GrayやMPU6886ユニット(M5Stack用6軸IMUユニットなど)が必要です)
+- 加速度の入力(IMUを持つM5Stack Gray, M5StickC、MPU6886ユニット([M5Stack用6軸IMUユニット](https://www.switch-science.com/catalog/6623/)など)が必要です)
+
+|機種|加速度入力|音出力|ボタン|
+|---|---|---|---|
+|M5Stack Basic|別途IMU必要|o|A,B,C(LOGO)|
+|M5Stack Gray |o|o|A,B,C(LOGO)|
+|M5StickC     |o|x|A,B|
 
 # どうやって使うの?
 ## M5Stack側の準備
