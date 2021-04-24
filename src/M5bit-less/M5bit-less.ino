@@ -1,5 +1,9 @@
+#if defined(ARDUINO_M5Stack_Core_ESP32)
 #define M5STACK_MPU6886
 #include <M5Stack.h>
+#elif defined(ARDUINO_M5Stick_C)
+#include <M5StickC.h>
+#endif
 #include "utility/MahonyAHRS.h"
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -182,7 +186,9 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         if (cmd_audio == 0x00) {
           // STOP_TONE  0x00
           MSGLN(">> Stop tone");
+#if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.mute();
+#endif
         } else if (cmd_audio == 0x01) {
           // PLAY_TONE  0x01
           const uint8_t max_volume = 5;
@@ -196,8 +202,10 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           MSGLN("Volume:" + String(volume));
           MSGLN("Duration:" + String(duration));
           MSGLN("Freq:" + String(freq));
+#if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.setVolume(volume);
           M5.Speaker.tone(freq);
+#endif
         }
       }
     }
@@ -280,14 +288,25 @@ void setup() {
   M5.Lcd.begin();
   M5.Lcd.fillScreen(BLACK);
   // Start up screen
+
+#if defined(ARDUINO_M5Stack_Core_ESP32)
   M5.Lcd.setTextSize(2);
+#else
+  M5.Lcd.setTextSize(1);
+#endif
   M5.Lcd.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
   M5.Lcd.println(adv_str);
+  #if defined(ARDUINO_M5Stack_Core_ESP32)
   M5.Lcd.setTextSize(4);
+#else
+  M5.Lcd.setTextSize(2);
+#endif
 
   MSGLN("BLE start.");
+  MSGLN(adv_str);
+#if defined(ARDUINO_M5Stack_Core_ESP32)
   m5.Speaker.mute();
-
+#endif
   BLEDevice::init(adv_str);
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
@@ -438,6 +457,8 @@ void loop() {
     }
     prevB = btn_status;
 
+
+#if defined(ARDUINO_M5Stack_Core_ESP32)
     //// Button C (LOGO)
     action[1] = 121; // LOGO 121
     if (M5.BtnC.wasPressed()) {
@@ -446,6 +467,7 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
+#endif
   }
   M5.update();
 }
