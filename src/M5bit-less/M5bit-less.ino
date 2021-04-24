@@ -374,6 +374,9 @@ void setup() {
   pAdvertising->start();
 }
 
+// Previous button state
+uint8_t prevA = 0, prevB = 0, prevC = 0;
+
 void loop() {
   uint32_t time = (uint32_t)millis();
   // Set TimeStamp (Little Endian)
@@ -383,25 +386,62 @@ void loop() {
   action[7] = (time >> 24) & 0xff;
 
   if (deviceConnected) {
-    // Send notify data for button A & B.
-    // Now support click only
+    // Send notify data for button A, B and C(LOGO).
+
+    //// Button A
+    action[1] = 0x01;
     if (M5.BtnA.wasPressed()) {
+      // Button CLICK
       MSGLN("Button A clicked!");
-      action[1] = 0x01; // Button A
-      action[3] = 0x03; // Button CLICK
+      action[3] = 0x03;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
+    uint8_t btn_status = M5.BtnA.isPressed();
+    if (btn_status == 0 && prevA == 1) {
+      // Button Up
+      MSGLN("Button A up!");
+      action[3] = 0x02;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    } else if (btn_status == 1 && prevA == 0) {
+      // Button Down
+      MSGLN("Button A down!");
+      action[3] = 0x01;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    }
+    prevA = btn_status;
+
+    //// Button B
+    action[1] = 0x02;
     if (M5.BtnB.wasPressed()) {
+      // Button CLICK
       MSGLN("Button B clicked!");
-      action[1] = 0x02; // Button B
-      action[3] = 0x03; // Button CLICK
+      action[3] = 0x03;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
+    btn_status = M5.BtnB.isPressed();
+    if (btn_status == 0 && prevB == 1) {
+      // Button UP
+      MSGLN("Button B up!");
+      action[3] = 0x02;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    } else if (btn_status == 1 && prevB == 0) {
+      // Button Down
+      MSGLN("Button B down!");
+      action[3] = 0x01;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    }
+    prevB = btn_status;
+
+    //// Button C (LOGO)
+    action[1] = 121; // LOGO 121
     if (M5.BtnC.wasPressed()) {
       MSGLN("Button C (LOGO) clicked!");
-      action[1] = 121; // LOGO 121
       action[3] = 0x03; // Button CLICK
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
