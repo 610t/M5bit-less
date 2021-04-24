@@ -97,7 +97,7 @@ uint16_t pixel[5][5] = {0};
 void drawPixel(int x, int y, int c) {
   int w = M5.Lcd.width();
   int h = M5.Lcd.height();
-  int ps = (w < (h - TEXT_SPACE)) ? w / 5 : h / 5; // Pixel size
+  int ps = (w < (h - TEXT_SPACE)) ? w / 5 : (h - TEXT_SPACE) / 5; // Pixel size
 
   if (c) {
     M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, RED);
