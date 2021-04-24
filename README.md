@@ -4,7 +4,7 @@ Arduino IDEで作成しています。
 
 ## サポートしている機能
 - つながったときイベントブロック
-- AとBボタンのクリック(下がったときと上がったときは未実装)
+- AとBボタンのクリック、下がったとき、上がったとき
 - 文字列の表示
 - パターンの表示
 - 音の出力
@@ -17,7 +17,7 @@ Arduino IDEで作成しています。
 ## Scratch側の準備
 Microbit Moreは、[stretch3](https://stretch3.github.io/)などで拡張機能として使うことができます。
 
-現在のM5bit Lessでは、固定IDとして"BBC micro:bit[m5scr]"を使っているので、これに接続します。
+M5bit Lessでは、画面に表示される"BBC micro:bit[hogehoge]"に接続します。
 
 あとは、通常のMicrobit Moreのように利用することができますが、まだ実装していない機能があるので注意してください。
 
