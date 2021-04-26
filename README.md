@@ -10,6 +10,7 @@ Arduino IDEで作成しています。
 - M5Stack Basic
 - M5Stack Gray
 - M5StickC
+- M5StickC Plus
 
 ## サポートしている機能
 - つながったときイベントブロック
@@ -23,7 +24,7 @@ Arduino IDEで作成しています。
 |---|---|---|---|
 |M5Stack Basic|別途IMU必要|o|A,B,C(LOGO)|
 |M5Stack Gray |o|o|A,B,C(LOGO)|
-|M5StickC     |o|x|A,B|
+|M5StickC/Plus|o|x|A,B|
 
 # どうやって使うの?
 ## M5Stack側の準備
@@ -45,5 +46,5 @@ M5bit Lessでは、画面に表示される"BBC micro:bit[hogehoge]"に接続し
 ## (標準の)M5Stackで足りない機能
 以下の項目は、M5Stackに対応するセンサーなどが標準では無いため、実装できていません。
 - 明るさセンサーの対応
-- 磁力に関する機能(北からの角度などを含む)
-- 音声入力((標準では)マイクが無いため)
+- 磁力に関する機能(北からの角度などを含む): M5Stack Grayでは実装可能
+- 音声入力((標準では)マイクが無いため): Core2などのマイク入力のある機種では実装可能
