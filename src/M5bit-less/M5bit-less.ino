@@ -3,6 +3,8 @@
 #include <M5Stack.h>
 #elif defined(ARDUINO_M5Stick_C)
 #include <M5StickC.h>
+#elif defined(ARDUINO_M5Stick_C_Plus)
+#include <M5StickCPlus.h>
 #elif defined(ARDUINO_M5Stack_ATOM)
 #include <M5Atom.h>
 // Colours
