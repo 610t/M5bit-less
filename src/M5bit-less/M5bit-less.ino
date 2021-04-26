@@ -3,6 +3,14 @@
 #include <M5Stack.h>
 #elif defined(ARDUINO_M5Stick_C)
 #include <M5StickC.h>
+#elif defined(ARDUINO_M5Stack_ATOM)
+#include <M5Atom.h>
+// Colours
+#define WHITE CRGB::White
+#define BLACK CRGB::Black
+#define RED   CRGB::Red
+#define GREEN CRGB::Green
+#define BLUE  CRGB::Blue
 #endif
 #include "utility/MahonyAHRS.h"
 #include <BLEDevice.h>
@@ -69,11 +77,52 @@ BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic[9] = {0};
 bool deviceConnected = false;
 
+// for pixel pattern
+#define TEXT_SPACE 30
+uint16_t pixel[5][5] = {0};
+
+void drawPixel(int x, int y, int c) {
+#if !defined(ARDUINO_M5Stack_ATOM)
+  int w = M5.Lcd.width();
+  int h = M5.Lcd.height();
+  int ps = (w < (h - TEXT_SPACE)) ? w / 5 : (h - TEXT_SPACE) / 5; // Pixel size
+
+  M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+#else
+  M5.dis.drawpix(x, y, c);
+#endif
+};
+
+void displayShowPixel() {
+  for (int y = 0; y < 5; y++) {
+    for (int x = 0; x < 5; x++) {
+      MSG(pixel[y][x] & 0b1);
+      if (pixel[y][x] & 0b1) {
+        drawPixel(x, y, RED);
+      } else {
+        drawPixel(x, y, BLACK);
+      }
+    }
+  }
+};
+
+void fillScreen(int c) {
+#if !defined(ARDUINO_M5Stack_ATOM)
+  M5.Lcd.fillScreen(c);
+#else
+  for (int x = 0; x < 5; x++) {
+    for (int y = 0; y < 5; y++) {
+      drawPixel(x, y, c);
+    }
+  }
+#endif
+};
+
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer * pServer) {
       MSGLN("connect");
       deviceConnected = true;
-      M5.Lcd.fillScreen(BLACK);
+      fillScreen(WHITE);
     };
 
     void onDisconnect(BLEServer * pServer) {
@@ -94,31 +143,6 @@ class DummyCallbacks: public BLECharacteristicCallbacks {
 };
 
 // for cmd
-// for pixel pattern
-#define TEXT_SPACE 30
-uint16_t pixel[5][5] = {0};
-
-void drawPixel(int x, int y, int c) {
-  int w = M5.Lcd.width();
-  int h = M5.Lcd.height();
-  int ps = (w < (h - TEXT_SPACE)) ? w / 5 : (h - TEXT_SPACE) / 5; // Pixel size
-
-  if (c) {
-    M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, RED);
-  } else {
-    M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, BLACK);
-  }
-};
-
-void displayShowPixel() {
-  for (int y = 0; y < 5; y++) {
-    for (int x = 0; x < 5; x++) {
-      Serial.print(pixel[y][x] & 0b1);
-      drawPixel(x, y, pixel[y][x] & 0b1);
-    }
-    Serial.println();
-  }
-};
 
 class CmdCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
@@ -153,14 +177,18 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         if (cmd_display == 0x00) {
           // CLEAR    0x00
           MSGLN(">> clear");
-          M5.Lcd.fillScreen(BLACK);
+          fillScreen(BLACK);
         } else if (cmd_display == 0x01) {
           // TEXT     0x01
           MSGLN(">> text");
           MSGLN(&(cmd_str[1]));
+#if !defined(ARDUINO_M5Stack_ATOM)
           M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
           M5.Lcd.setCursor(0, 0);
           M5.Lcd.println(&(cmd_str[1]));
+#else
+          // Not implemented yet
+#endif
         } else if (cmd_display == 0x02) {
           // PIXELS_0 0x02
           MSGLN(">> pixel0");
@@ -270,7 +298,11 @@ class ActionCallbacks: public BLECharacteristicCallbacks {
 
 void setup() {
   Serial.begin(115200);
+#if !defined(ARDUINO_M5Stack_ATOM)
   M5.begin();
+#else
+  M5.begin(true, false, true);
+#endif
   M5.IMU.Init(); // IMU for temperature, accel and gyro
 
   // Create MAC address base fixed ID
@@ -285,10 +317,14 @@ void setup() {
   char adv_str[32] = {0};
   String("BBC micro:bit [" + ID + "]").toCharArray(adv_str, sizeof(adv_str));
 
+#if !defined(ARDUINO_M5Stack_ATOM)
   M5.Lcd.begin();
   M5.Lcd.fillScreen(BLACK);
-  // Start up screen
+#endif
 
+  // Start up screen
+  fillScreen(BLUE);
+#if !defined(ARDUINO_M5Stack_ATOM)
 #if defined(ARDUINO_M5Stack_Core_ESP32)
   M5.Lcd.setTextSize(2);
 #else
@@ -296,10 +332,11 @@ void setup() {
 #endif
   M5.Lcd.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
   M5.Lcd.println(adv_str);
-  #if defined(ARDUINO_M5Stack_Core_ESP32)
+#if defined(ARDUINO_M5Stack_Core_ESP32)
   M5.Lcd.setTextSize(4);
 #else
   M5.Lcd.setTextSize(2);
+#endif
 #endif
 
   MSGLN("BLE start.");
@@ -409,14 +446,20 @@ void loop() {
 
     //// Button A
     action[1] = 0x01;
-    if (M5.BtnA.wasPressed()) {
+#if !defined(ARDUINO_M5Stack_ATOM)
+    uint8_t btnA = M5.BtnA.wasPressed();
+    uint8_t btn_status = M5.BtnA.isPressed();
+#else
+    uint8_t btnA = M5.Btn.wasPressed();
+    uint8_t btn_status = M5.Btn.isPressed();
+#endif
+    if (btnA) {
       // Button CLICK
       MSGLN("Button A clicked!");
       action[3] = 0x03;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
-    uint8_t btn_status = M5.BtnA.isPressed();
     if (btn_status == 0 && prevA == 1) {
       // Button Up
       MSGLN("Button A up!");
@@ -432,6 +475,7 @@ void loop() {
     }
     prevA = btn_status;
 
+#if !defined(ARDUINO_M5Stack_ATOM)
     //// Button B
     action[1] = 0x02;
     if (M5.BtnB.wasPressed()) {
@@ -467,6 +511,7 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
+#endif
 #endif
   }
   M5.update();
