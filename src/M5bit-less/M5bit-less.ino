@@ -128,7 +128,11 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer * pServer) {
       MSGLN("disconnect");
       deviceConnected = false;
+#if !defined(ARDUINO_M5Stick_C)
+      esp_restart();
+#else
       setup();
+#endif
     }
 };
 
