@@ -18,6 +18,7 @@ Arduino IDEで作成しています。
 - M5Stack Gray
 - M5StickC
 - M5StickC Plus
+- (作業中: ATOM Matrix)
 
 ## サポートしている機能
 - つながったときイベントブロック
@@ -27,11 +28,12 @@ Arduino IDEで作成しています。
 - 音の出力
 - 加速度の入力(IMUを持つM5Stack Gray, M5StickC、MPU6886ユニット([M5Stack用6軸IMUユニット](https://www.switch-science.com/catalog/6623/)など)が必要です)
 
-|機種|加速度入力|音出力|ボタン|
-|---|---|---|---|
+|機種|加速度入力|音出力|ボタン|備考|
+|---|---|---|---|---|
 |M5Stack Basic|別途IMU必要|o|A,B,C(LOGO)|
 |M5Stack Gray |o|o|A,B,C(LOGO)|
 |M5StickC/Plus|o|x|A,B|
+|(ATOM Matrix)|o|x|A|作業中|
 
 # どうやって使うの?
 ## M5Stack側の準備
