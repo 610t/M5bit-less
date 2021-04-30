@@ -19,6 +19,7 @@ Arduino IDEで作成しています。
 - M5StickC
 - M5StickC Plus
 - (作業中: ATOM Matrix)
+- (作業中: Wio Terminal)
 
 ## サポートしている機能
 - つながったときイベントブロック
@@ -28,12 +29,13 @@ Arduino IDEで作成しています。
 - 音の出力
 - 加速度の入力(IMUを持つM5Stack Gray, M5StickC、MPU6886ユニット([M5Stack用6軸IMUユニット](https://www.switch-science.com/catalog/6623/)など)が必要です)
 
-|機種|加速度入力|音出力|ボタン|備考|
-|---|---|---|---|---|
-|M5Stack Basic|別途IMU必要|o|A,B,C(LOGO)|
-|M5Stack Gray |o|o|A,B,C(LOGO)|
-|M5StickC/Plus|o|x|A,B|
-|(ATOM Matrix)|o|x|A|作業中|
+|機種|加速度入力|パターン表示|文字列表示|音出力|ボタン|明るさ|備考|
+|---|---|---|---|---|---|---|---|
+|M5Stack Basic|△別途IMU必要|o|o|o|A,B,C(LOGO)|x|
+|M5Stack Gray |o|o|o|o|A,B,C(LOGO)|x|
+|M5StickC/Plus|o|o|o|x|A,B|x|
+|(ATOM Matrix)|o|o|x|x|A|x|作業中|
+|(Wio Terminal)|o|△|△|?|A,B,C(LOGO)|△|作業中|
 
 # どうやって使うの?
 ## M5Stack側の準備
@@ -54,6 +56,6 @@ M5bit Lessでは、画面に表示される"BBC micro:bit[hogehoge]"に接続し
 
 ## (標準の)M5Stackで足りない機能
 以下の項目は、M5Stackに対応するセンサーなどが標準では無いため、実装できていません。
-- 明るさセンサーの対応
+- 明るさセンサーの対応: Wio Terminalでは実装可能
 - 磁力に関する機能(北からの角度などを含む): M5Stack Grayでは実装可能
 - 音声入力((標準では)マイクが無いため): Core2などのマイク入力のある機種では実装可能
