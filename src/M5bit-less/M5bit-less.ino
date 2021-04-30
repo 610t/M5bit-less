@@ -449,16 +449,26 @@ void loop() {
 
   if (deviceConnected) {
     // Send notify data for button A, B and C(LOGO).
+    uint8_t btnA = 0, btnB = 0, btnC = 0,
+            btn_statusA = 0, btn_statusB = 0, btn_statusC = 0;
+
+    // Get all button status
+#if defined(ARDUINO_M5Stack_ATOM)
+    btnA = M5.Btn.wasPressed();
+    btn_statusA = M5.Btn.isPressed();
+#else
+    btnA = M5.BtnA.wasPressed();
+    btn_statusA = M5.BtnA.isPressed();
+    btnB = M5.BtnB.wasPressed();
+    btn_statusB = M5.BtnB.isPressed();
+#if defined(ARDUINO_M5Stack_Core_ESP32)
+    btnC = M5.BtnC.wasPressed();
+    btn_statusC = M5.BtnC.isPressed();
+#endif
+#endif
 
     //// Button A
     action[1] = 0x01;
-#if !defined(ARDUINO_M5Stack_ATOM)
-    uint8_t btnA = M5.BtnA.wasPressed();
-    uint8_t btn_status = M5.BtnA.isPressed();
-#else
-    uint8_t btnA = M5.Btn.wasPressed();
-    uint8_t btn_status = M5.Btn.isPressed();
-#endif
     if (btnA) {
       // Button CLICK
       MSGLN("Button A clicked!");
@@ -466,59 +476,53 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
-    if (btn_status == 0 && prevA == 1) {
+    if (btn_statusA == 0 && prevA == 1) {
       // Button Up
       MSGLN("Button A up!");
       action[3] = 0x02;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
-    } else if (btn_status == 1 && prevA == 0) {
+    } else if (btn_statusA == 1 && prevA == 0) {
       // Button Down
       MSGLN("Button A down!");
       action[3] = 0x01;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
-    prevA = btn_status;
+    prevA = btn_statusA;
 
-#if !defined(ARDUINO_M5Stack_ATOM)
     //// Button B
     action[1] = 0x02;
-    if (M5.BtnB.wasPressed()) {
+    if (btnB) {
       // Button CLICK
       MSGLN("Button B clicked!");
       action[3] = 0x03;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
-    btn_status = M5.BtnB.isPressed();
-    if (btn_status == 0 && prevB == 1) {
+    if (btn_statusB == 0 && prevB == 1) {
       // Button UP
       MSGLN("Button B up!");
       action[3] = 0x02;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
-    } else if (btn_status == 1 && prevB == 0) {
+    } else if (btn_statusB == 1 && prevB == 0) {
       // Button Down
       MSGLN("Button B down!");
       action[3] = 0x01;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
-    prevB = btn_status;
+    prevB = btn_statusB;
 
-
-#if defined(ARDUINO_M5Stack_Core_ESP32)
     //// Button C (LOGO)
     action[1] = 121; // LOGO 121
-    if (M5.BtnC.wasPressed()) {
+    if (btnC) {
       MSGLN("Button C (LOGO) clicked!");
       action[3] = 0x03; // Button CLICK
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
-#endif
-#endif
   }
   M5.update();
 }
