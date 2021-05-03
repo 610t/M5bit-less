@@ -18,8 +18,9 @@ Arduino IDEで作成しています。
 - M5Stack Gray
 - M5StickC
 - M5StickC Plus
+- Wio Terminal
 - (作業中: ATOM Matrix)
-- (作業中: Wio Terminal)
+
 
 ## サポートしている機能
 - つながったときイベントブロック
@@ -34,8 +35,8 @@ Arduino IDEで作成しています。
 |M5Stack Basic|△別途IMU必要|o|o|o|A,B,C(LOGO)|x|
 |M5Stack Gray |o|o|o|o|A,B,C(LOGO)|x|
 |M5StickC/Plus|o|o|o|x|A,B|x|
+|Wio Terminal|o|o|o|△|A,B,C(LOGO)|△| |
 |(ATOM Matrix)|o|o|x|x|A|x|作業中|
-|(Wio Terminal)|o|△|△|?|A,B,C(LOGO)|△|作業中|
 
 # どうやって使うの?
 ## M5Stack側の準備
