@@ -24,19 +24,23 @@ Arduino IDEで作成しています。
 
 ## サポートしている機能
 - つながったときイベントブロック
-- AとBボタンのクリック、下がったとき、上がったとき
-- 文字列の表示
-- パターンの表示
-- 音の出力
 - 加速度の入力(IMUを持つM5Stack Gray, M5StickC、MPU6886ユニット([M5Stack用6軸IMUユニット](https://www.switch-science.com/catalog/6623/)など)が必要です)
+- パターンの表示
+- 文字列の表示
+- 音を鳴らす
+- 音の大きさ
+- AとBボタンのクリック、下がったとき、上がったとき
+- 明るさ
+- 温度
 
-|機種|加速度入力|パターン表示|文字列表示|音出力|ボタン|明るさ|備考|
-|---|---|---|---|---|---|---|---|
-|M5Stack Basic|△別途IMU必要|o|o|o|A,B,C(LOGO)|x|
-|M5Stack Gray |o|o|o|o|A,B,C(LOGO)|x|
-|M5StickC/Plus|o|o|o|x|A,B|x|
-|Wio Terminal|o|o|o|△|A,B,C(LOGO)|△| |
-|(ATOM Matrix)|o|o|x|x|A|x|作業中|
+|機種|加速度入力|パターン表示|文字列表示|音を鳴らす|音の大きさ|ボタン|明るさ|温度|備考|
+|---|---|---|---|---|---|---|---|---|---|
+|M5Stack Basic|△別途IMU必要|o|o|o|x|A,B,C(LOGO)|x|△別途IMU必要||
+|M5Stack Gray |o|o|o|o|x|A,B,C(LOGO)|x|o||
+|M5StickC/Plus|o|o|o|x|△(マイク付きモデル)|A,B|x|o||
+|Wio Terminal|o|o|o|△|△|A,B,C(LOGO)|o|o| |
+|(ATOM Matrix)|o|o|△|x|x|A|x|x|作業中|
+- △:対応可能だがまだ実装できていないもの。
 
 # どうやって使うの?
 ## M5Stack側の準備
