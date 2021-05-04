@@ -253,6 +253,8 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           MSGLN(">> Stop tone");
 #if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.mute();
+#elif defined(ARDUINO_M5Stick_C_Plus)
+          M5.Beep.mute();
 #endif
         } else if (cmd_audio == 0x01) {
           // PLAY_TONE  0x01
@@ -270,6 +272,9 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.setVolume(volume);
           M5.Speaker.tone(freq);
+#elif defined(ARDUINO_M5Stick_C_Plus)
+          M5.Beep.setVolume(volume);
+          M5.Beep.tone(freq);
 #endif
         }
       }
