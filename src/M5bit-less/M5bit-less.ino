@@ -417,9 +417,7 @@ void setup() {
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.setTextSize(2);
   tft.setCursor(0, 0);
-  tft.println("Welcome to");
-  tft.println("M5bit Less!!\n");
-  tft.println("Please connect to");
+  tft.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
   tft.println(adv_str);
 #else
 #if !defined(ARDUINO_M5Stack_ATOM)
