@@ -416,6 +416,11 @@ void setup() {
   fillScreen(BLUE);
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.setTextSize(2);
+  tft.setCursor(0, 0);
+  tft.println("Welcome to");
+  tft.println("M5bit Less!!\n");
+  tft.println("Please connect to");
+  tft.println(adv_str);
 #else
 #if !defined(ARDUINO_M5Stack_ATOM)
 #if defined(ARDUINO_M5Stack_Core_ESP32)
