@@ -316,7 +316,10 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       M5.IMU.getGyroAdc(&gx, &gy, &gz);   // get gyro
       MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
 #else
+#define RAD_TO_DEG 57.324
       lis.getAcceleration(&ay, &ax, &az);
+      pitch = atan(-ax / sqrtf(ay * ay + az * az)) * RAD_TO_DEG;
+      roll = atan(ay / az) * RAD_TO_DEG;
 #endif
 
       // Now send fixed accelerometer related values
