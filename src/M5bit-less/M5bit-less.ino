@@ -265,7 +265,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
                               | (cmd_str[2] & 0xff) << 8
                               | (cmd_str[1] & 0xff);
           uint16_t freq = 1000000 / duration;
-          uint8_t volume = (uint8_t)(max_volume * cmd_str[5] / 255.0);
+          uint8_t volume = map(cmd_str[5], 0, 255, 0, max_volume);
           MSGLN("Volume:" + String(volume));
           MSGLN("Duration:" + String(duration));
           MSGLN("Freq:" + String(freq));
@@ -291,11 +291,10 @@ class StateCallbacks: public BLECharacteristicCallbacks {
       state[6] = (random(256) & 0xff); // Random sensor value for soundlevel
 #else
       temp = lis.getTemperature();
-      int light = (int)(analogRead(WIO_LIGHT) / 1024.0 * 255.0);
+      int light = (int)map(analogRead(WIO_LIGHT), 0, 1023, 0, 255);
       MSGLN(">> Light Level " + String(light));
       state[4] = (light & 0xff); // lightlevel
-      //int mic = analogRead(WIO_MIC);
-      int mic = (int)(analogRead(WIO_MIC) / 1024.0 * 255.0);
+      int mic = (int)map(analogRead(WIO_MIC), 0, 1023, 0, 255);
       state[6] = (mic & 0xff); // soundlevel
       MSGLN(">> sound Level " + String(mic));
 #endif
