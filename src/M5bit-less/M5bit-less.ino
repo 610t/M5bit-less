@@ -14,6 +14,7 @@
 #define GREEN CRGB::Green
 #define BLUE  CRGB::Blue
 #elif defined(ARDUINO_WIO_TERMINAL)
+#include "WioTerminal_utils.h"
 // Display
 #include"TFT_eSPI.h"
 TFT_eSPI tft;
@@ -27,6 +28,8 @@ TFT_eSPI tft;
 #include "LIS3DHTR.h"
 #include <SPI.h>
 LIS3DHTR<TwoWire> lis;
+// Tone
+SPEAKER Beep;
 #endif
 #if defined(ARDUINO_WIO_TERMINAL)
 // Dirty hack avoid conflicting min/max macro and function
@@ -255,6 +258,8 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           M5.Speaker.mute();
 #elif defined(ARDUINO_M5Stick_C_Plus)
           M5.Beep.mute();
+#elif defined(ARDUINO_WIO_TERMINAL)
+          Beep.mute();
 #endif
         } else if (cmd_audio == 0x01) {
           // PLAY_TONE  0x01
@@ -275,6 +280,9 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #elif defined(ARDUINO_M5Stick_C_Plus)
           M5.Beep.setVolume(volume);
           M5.Beep.tone(freq);
+#elif defined(ARDUINO_WIO_TERMINAL)
+          Beep.setVolume(volume);
+          Beep.tone(freq);
 #endif
         }
       }
@@ -322,7 +330,6 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       roll = atan(ay / az) * RAD_TO_DEG;
 #endif
 
-      // Now send fixed accelerometer related values
       MSG("MOTION read:");
       motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
       motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
@@ -634,5 +641,8 @@ void loop() {
   }
 #if !defined(ARDUINO_WIO_TERMINAL)
   M5.update();
+#endif
+#if defined(ARDUINO_WIO_TERMINAL)
+  Beep.update();
 #endif
 }
