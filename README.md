@@ -19,7 +19,7 @@ Arduino IDEで作成しています。
 - M5StickC
 - M5StickC Plus
 - Wio Terminal
-- (作業中: ATOM Matrix)
+- ATOM Matrix
 
 
 ## サポートしている機能
