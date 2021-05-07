@@ -40,7 +40,7 @@ Arduino IDEで作成しています。
 |M5StickC|o|o|o|x|△(マイク付きモデル)|A,B|x|o||
 |M5StickC Plus|o|o|o|o|△|A,B|x|o||
 |Wio Terminal|o|o|o|o|o|A,B,C(LOGO)|o|o| |
-|(ATOM Matrix)|o|o|△|x|x|A|x|x|作業中|
+|ATOM Matrix|o|o|△|x|x|A|x|o|電波が弱い|
 - △:対応可能だがまだ実装できていないもの。
 
 # どうやって使うの?
