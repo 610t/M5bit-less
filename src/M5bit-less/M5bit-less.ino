@@ -44,6 +44,59 @@ SPEAKER Beep;
 #include <BLEServer.h>
 #include <BLE2902.h>
 
+// Mic for M5StickC/Plus
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#include <driver/i2s.h>
+
+#define PIN_CLK  0
+#define PIN_DATA 34
+#define READ_LEN (2 * 256)
+#define SAMPLING_RATE 11025
+uint8_t BUFFER[READ_LEN] = {0};
+
+int16_t *adcBuffer = NULL;
+int soundLevel = 0;
+
+void i2sInit()
+{
+  i2s_config_t i2s_config = {
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM),
+    .sample_rate =  SAMPLING_RATE,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // is fixed at 12bit, stereo, MSB
+    .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,
+    .communication_format = I2S_COMM_FORMAT_I2S,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count = 2,
+    .dma_buf_len = 128,
+  };
+
+  i2s_pin_config_t pin_config;
+  pin_config.bck_io_num   = I2S_PIN_NO_CHANGE;
+  pin_config.ws_io_num    = PIN_CLK;
+  pin_config.data_out_num = I2S_PIN_NO_CHANGE;
+  pin_config.data_in_num  = PIN_DATA;
+
+  i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+  i2s_set_pin(I2S_NUM_0, &pin_config);
+  i2s_set_clk(I2S_NUM_0, SAMPLING_RATE, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
+}
+
+void mic_record_task (void* arg)
+{
+  size_t bytesread;
+  while (1) {
+    int total = 0;
+    i2s_read(I2S_NUM_0, (char*) BUFFER, READ_LEN, &bytesread, (100 / portTICK_RATE_MS));
+    adcBuffer = (int16_t *)BUFFER;
+    for (int i = 0; i < READ_LEN / 2; i++) {
+      total += abs(adcBuffer[i]);
+    }
+    soundLevel = total / (READ_LEN / 2);
+    vTaskDelay(100 / portTICK_RATE_MS);
+  }
+}
+#endif
+
 #define MSG(msg)  {Serial.print(msg);}
 #define MSGLN(msg)  {Serial.println(msg);}
 #define MSGF(msg)  {Serial.printf(msg);}
@@ -296,13 +349,13 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 #if !defined(ARDUINO_WIO_TERMINAL)
       M5.IMU.getTempData(&temp); // get temperature from IMU
       state[4] = (random(256) & 0xff); // Random sensor value for lightlevel
-      state[6] = (random(256) & 0xff); // Random sensor value for soundlevel
+      state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff); // Random sensor value for soundlevel
 #else
       temp = lis.getTemperature();
       int light = (int)map(analogRead(WIO_LIGHT), 0, 1023, 0, 255);
       MSGLN(">> Light Level " + String(light));
       state[4] = (light & 0xff); // lightlevel
-      int mic = (int)map(analogRead(WIO_MIC), 0, 1023, 0, 255);
+      int mic = (int)map(analogRead(WIO_MIC), 0, 512, 0, 255);
       state[6] = (mic & 0xff); // soundlevel
       MSGLN(">> sound Level " + String(mic));
 #endif
@@ -400,6 +453,12 @@ void setup() {
   pinMode(WIO_MIC, INPUT);
   // LED
   pinMode(LED_BUILTIN, OUTPUT);
+#endif
+
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+  // for Mic input
+  i2sInit();
+  xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
 #endif
 
   // Create MAC address base fixed ID
