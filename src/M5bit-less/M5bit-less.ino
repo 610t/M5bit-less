@@ -352,10 +352,10 @@ class StateCallbacks: public BLECharacteristicCallbacks {
       state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff); // Random sensor value for soundlevel
 #else
       temp = lis.getTemperature();
-      int light = (int)map(analogRead(WIO_LIGHT), 0, 1023, 0, 255);
+      int light = (int)map(analogRead(WIO_LIGHT), 0, 511, 0, 255);
       MSGLN(">> Light Level " + String(light));
       state[4] = (light & 0xff); // lightlevel
-      int mic = (int)map(analogRead(WIO_MIC), 0, 512, 0, 255);
+      int mic = (int)map(analogRead(WIO_MIC), 0, 511, 0, 255);
       state[6] = (mic & 0xff); // soundlevel
       MSGLN(">> sound Level " + String(mic));
 #endif
