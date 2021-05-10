@@ -707,6 +707,20 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
+    if (btn_statusC == 0 && prevC == 1) {
+      // Button UP
+      MSGLN("Button C (LOGO) released!");
+      action[3] = 0x02;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    } else if (btn_statusC == 1 && prevC == 0) {
+      // Button Down
+      MSGLN("Button C (LOGO) touched!");
+      action[3] = 0x01;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+    }
+    prevC = btn_statusC;
   }
 #if !defined(ARDUINO_WIO_TERMINAL)
   M5.update();
