@@ -471,6 +471,7 @@ void setup() {
   esp_efuse_mac_get_default(mac0);
 #else
   // Create random mac address for avoid conflict ID.
+  randomSeed(analogRead(A0));
   for (int i = 0; i < sizeof(mac0); i++) {
     mac0[i] = random(256);
   }
