@@ -349,7 +349,11 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 #if !defined(ARDUINO_WIO_TERMINAL)
       M5.IMU.getTempData(&temp); // get temperature from IMU
       state[4] = (random(256) & 0xff); // Random sensor value for lightlevel
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
       state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff); // Random sensor value for soundlevel
+#else
+      state[6] = (random(256) & 0xff); // Random sensor value for soundlevel
+#endif
 #else
       temp = lis.getTemperature();
       int light = (int)map(analogRead(WIO_LIGHT), 0, 511, 0, 255);
