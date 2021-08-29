@@ -33,7 +33,7 @@ Arduino IDEで作成しています。
 - 明るさ
 - 温度
 
-|機種|加速度入力|パターン表示|文字列表示|音を鳴らす|音の大きさ|ボタン|明るさ|温度|備考|
+|機種/device|加速度入力/acceleration|パターン表示/display pattern|文字列表示/display text|音を鳴らす/play tone|音の大きさ/sound level|ボタン/button input|明るさ/light intensity|温度/temperature|備考/Note|
 |---|---|---|---|---|---|---|---|---|---|
 |M5Stack Basic|△別途IMU必要|o|o|o|x|A,B,C(LOGO)|x|△別途IMU必要||
 |M5Stack Gray |o|o|o|o|x|A,B,C(LOGO)|x|o||
