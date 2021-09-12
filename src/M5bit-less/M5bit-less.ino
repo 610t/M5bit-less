@@ -1,6 +1,8 @@
 #if defined(ARDUINO_M5Stack_Core_ESP32)
 #define M5STACK_MPU6886
 #include <M5Stack.h>
+#elif defined(ARDUINO_M5STACK_Core2)
+#include <M5Core2.h>
 #elif defined(ARDUINO_M5Stick_C)
 #include <M5StickC.h>
 #elif defined(ARDUINO_M5Stick_C_Plus)
@@ -644,7 +646,7 @@ void loop() {
     btn_statusA = M5.BtnA.isPressed();
     btnB = M5.BtnB.wasPressed();
     btn_statusB = M5.BtnB.isPressed();
-#if defined(ARDUINO_M5Stack_Core_ESP32)
+#if defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
     btnC = M5.BtnC.wasPressed();
     btn_statusC = M5.BtnC.isPressed();
 #endif
