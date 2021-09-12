@@ -4,18 +4,12 @@
 [M5bit Less](https://scrapbox.io/M5S/M5bit_Less)は、[Microbit More](https://microbit-more.github.io/)をM5Stackで使うためのM5Stack用プログラムです。
 Arduino IDEで作成しています。
 
-## デモ動画
-### M5bit Less: M5StackでScratchを使おう!!; Maker Fair Kyoto 2021「教育」カテゴリ応募作品
-[![M5bit Less: M5StackでScratchを使おう!!](https://img.youtube.com/vi/sNwNkEHScCE/0.jpg)](https://www.youtube.com/watch?v=sNwNkEHScCE)
-
-### 京都観光案内 with M5bit Less - あかんターレで決めターレ ; Maker Fair Kyoto 2021「京都」カテゴリ応募作品
-[![京都観光案内 with M5bit Less - あかんターレで決めターレ](https://img.youtube.com/vi/7ue7GZlBH6Y/0.jpg)](https://www.youtube.com/watch?v=7ue7GZlBH6Y)
-
 ## サポートしている機種
 以下の機種で動くことを確認していますが、全てで同じ機能がサポートされているわけではありません。
 詳しくは、サポートしている機能の表を参照してください。
 - M5Stack Basic
 - M5Stack Gray
+- M5Stack Core2
 - M5StickC
 - M5StickC Plus
 - ATOM Matrix
@@ -37,6 +31,7 @@ Arduino IDEで作成しています。
 |---|---|---|---|---|---|---|---|---|---|
 |M5Stack Basic|△別途IMU必要|o|o|o|x|A,B,C(LOGO)|x|△別途IMU必要||
 |M5Stack Gray |o|o|o|o|x|A,B,C(LOGO)|x|o||
+|M5Stack Core2|o|o|o|o|x|A,B,C(LOGO)|x|o||
 |M5StickC|o|o|o|x|o(マイク付きモデル)|A,B|x|o||
 |M5StickC Plus|o|o|o|o|o|A,B|x|o||
 |ATOM Matrix|o|o|△|x|x|A|x|o|電波が弱い|
@@ -75,3 +70,17 @@ Microbit Moreの拡張機能を追加します。
 - 明るさセンサーの対応: Wio Terminalでは実装
 - 磁力に関する機能(北からの角度などを含む): M5Stack Grayでは実装可能
 - 音声入力((標準では)マイクが無いため): M5StickC/PlusやCore2などのマイク入力のある機種では実装可能
+
+
+## 動画/発表資料
+### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
+- [発表資料](https://protopedia.net/prototype/2395)
+
+[![M5bit Less: M5Stack x Scratch3 = So Fun!!動画](https://img.youtube.com/vi/-Nfu87CjvBU/0.jpg)](https://youtu.be/-Nfu87CjvBU)
+
+### [Maker Faire Kyoto 2021](https://makezine.jp/event/mfk2021/)
+#### M5bit Less: M5StackでScratchを使おう!!;「教育」カテゴリ応募作品
+[![M5bit Less: M5StackでScratchを使おう!!](https://img.youtube.com/vi/sNwNkEHScCE/0.jpg)](https://www.youtube.com/watch?v=sNwNkEHScCE)
+
+#### 京都観光案内 with M5bit Less - あかんターレで決めターレ; 「京都」カテゴリ応募作品
+[![京都観光案内 with M5bit Less - あかんターレで決めターレ](https://img.youtube.com/vi/7ue7GZlBH6Y/0.jpg)](https://www.youtube.com/watch?v=7ue7GZlBH6Y)
