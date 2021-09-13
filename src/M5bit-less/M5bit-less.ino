@@ -373,21 +373,26 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 
 // for accelerometer related values
 #define ACC_MULT 1000
+#define RAD_TO_DEG 57.324
+float ax, ay, az;
+int16_t gx, gy, gz;
+float pitch , roll, yaw;
+
+void updateIMU() {
+#if !defined(ARDUINO_WIO_TERMINAL)
+  M5.IMU.getAccelData(&ax, &ay, &az); // get accel
+  M5.IMU.getGyroAdc(&gx, &gy, &gz);   // get gyro
+  MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
+#else
+  lis.getAcceleration(&ay, &ax, &az);
+  pitch = atan(-ax / sqrtf(ay * ay + az * az)) * RAD_TO_DEG;
+  roll = atan(ay / az) * RAD_TO_DEG;
+#endif
+}
+
 class MotionCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      float ax, ay, az;
-      int16_t gx, gy, gz;
-      float pitch , roll, yaw;
-#if !defined(ARDUINO_WIO_TERMINAL)
-      M5.IMU.getAccelData(&ax, &ay, &az); // get accel
-      M5.IMU.getGyroAdc(&gx, &gy, &gz);   // get gyro
-      MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
-#else
-#define RAD_TO_DEG 57.324
-      lis.getAcceleration(&ay, &ax, &az);
-      pitch = atan(-ax / sqrtf(ay * ay + az * az)) * RAD_TO_DEG;
-      roll = atan(ay / az) * RAD_TO_DEG;
-#endif
+      updateIMU();
 
       MSG("MOTION read:");
       motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
