@@ -375,6 +375,7 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 #define ACC_MULT 1000
 #define RAD_TO_DEG 57.324
 float ax, ay, az;
+int16_t iax, iay, iaz;
 int16_t gx, gy, gz;
 float pitch , roll, yaw;
 
@@ -388,6 +389,9 @@ void updateIMU() {
   pitch = atan(-ax / sqrtf(ay * ay + az * az)) * RAD_TO_DEG;
   roll = atan(ay / az) * RAD_TO_DEG;
 #endif
+  iax = (int16_t)(ax * ACC_MULT);
+  iay = (int16_t)(ay * ACC_MULT);
+  iaz = (int16_t)(az * ACC_MULT);
 }
 
 class MotionCallbacks: public BLECharacteristicCallbacks {
@@ -399,12 +403,12 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
       motion[2] = ((int)(roll * ACC_MULT) & 0xff);
       motion[3] = (((int)(roll * ACC_MULT) >> 8 ) & 0xff);
-      motion[4] = ((int)(ax * ACC_MULT) & 0xff);
-      motion[5] = (((int)(ax * ACC_MULT) >> 8 ) & 0xff);
-      motion[6] = ((int)(ay * ACC_MULT) & 0xff);
-      motion[7] = (((int)(ay * ACC_MULT) >> 8 ) & 0xff);
-      motion[8] = ((int)(-az * ACC_MULT) & 0xff);
-      motion[9] = (((int)(-az * ACC_MULT) >> 8 ) & 0xff);
+      motion[4] = (iax & 0xff);
+      motion[5] = ((iax >> 8 ) & 0xff);
+      motion[6] = (iay & 0xff);
+      motion[7] = ((iay >> 8 ) & 0xff);
+      motion[8] = (-iaz & 0xff);
+      motion[9] = ((-iaz >> 8 ) & 0xff);
       pCharacteristic->setValue(motion, 20);
 
       // debug print
