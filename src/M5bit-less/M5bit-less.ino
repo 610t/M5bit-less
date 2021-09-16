@@ -606,9 +606,8 @@ void setup() {
                          MBIT_MORE_CH_ANALOG_IN_P1,
                          BLECharacteristic::PROPERTY_READ
                        );
-  pCharacteristic[6]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[6]->setCallbacks(new AnalogPinCallbacks());
   pCharacteristic[6]->addDescriptor(new BLE2902());
-
 
   pCharacteristic[7] = pService->createCharacteristic(
                          MBIT_MORE_CH_ANALOG_IN_P2,
