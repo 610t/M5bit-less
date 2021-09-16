@@ -154,6 +154,9 @@ uint8_t action[] = {0x01, // BUTTON cmd; BUTTON:0x01, GESTURE: 0x02
                     0x12 // ACTION Event
                    };
 
+// ANALOG PIN 2 byte
+uint8_t analog[] = {0x00, 0x00};
+
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic[9] = {0};
 bool deviceConnected = false;
@@ -428,6 +431,19 @@ class ActionCallbacks: public BLECharacteristicCallbacks {
     }
 };
 
+// for Analog pin
+class AnalogPinCallbacks: public BLECharacteristicCallbacks {
+    void onRead(BLECharacteristic * pCharacteristic) {
+      int r = random(1024);
+      MSGLN("Analog Pin0 Read" + r);
+
+      analog[0] = (r & 0xff);
+      analog[1] = ((r >> 8 ) & 0xff);
+
+      pCharacteristic->setValue(analog, 2);
+    }
+};
+
 void setup() {
   Serial.begin(115200);
 #if !defined(ARDUINO_WIO_TERMINAL)
@@ -583,7 +599,7 @@ void setup() {
                          MBIT_MORE_CH_ANALOG_IN_P0,
                          BLECharacteristic::PROPERTY_READ
                        );
-  pCharacteristic[5]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[5]->setCallbacks(new AnalogPinCallbacks());
   pCharacteristic[5]->addDescriptor(new BLE2902());
 
   pCharacteristic[6] = pService->createCharacteristic(
