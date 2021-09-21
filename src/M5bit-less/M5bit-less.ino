@@ -99,10 +99,6 @@ void mic_record_task (void* arg)
 }
 #endif
 
-#define MSG(msg)  {Serial.print(msg);}
-#define MSGLN(msg)  {Serial.println(msg);}
-#define MSGF(msg)  {Serial.printf(msg);}
-
 #define MBIT_MORE_SERVICE          "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
 #define MBIT_MORE_CH_COMMAND       "0b500100-607f-4151-9091-7d008d6ffc5c" // R&W(20byte)
 #define MBIT_MORE_CH_STATE         "0b500101-607f-4151-9091-7d008d6ffc5c" // R(7byte)
@@ -189,7 +185,7 @@ void drawPixel(int x, int y, int c) {
 void displayShowPixel() {
   for (int y = 0; y < 5; y++) {
     for (int x = 0; x < 5; x++) {
-      MSG(pixel[y][x] & 0b1);
+      log_i("%1d", pixel[y][x] & 0b1);
       if (pixel[y][x] & 0b1) {
         drawPixel(x, y, RED);
       } else {
@@ -215,13 +211,13 @@ void fillScreen(int c) {
 
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer * pServer) {
-      MSGLN("connect");
+      log_i("connect\n");
       deviceConnected = true;
       fillScreen(WHITE);
     };
 
     void onDisconnect(BLEServer * pServer) {
-      MSGLN("disconnect");
+      log_i("disconnect\n");
       deviceConnected = false;
       setup();
     }
@@ -230,10 +226,10 @@ class MyServerCallbacks: public BLEServerCallbacks {
 // dummy callback
 class DummyCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      MSGLN("DUMMY Read");
+      log_i("DUMMY Read\n");
     }
     void onWrite(BLECharacteristic * pCharacteristic) {
-      MSGLN("DUMMY Write");
+      log_i("DUMMY Write\n");
     }
 };
 
@@ -241,12 +237,12 @@ class DummyCallbacks: public BLECharacteristicCallbacks {
 
 class CmdCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      MSGLN("CMD read");
+      log_i("CMD read\n");
       pCharacteristic->setValue(cmd, 20);
     }
 
     void onWrite(BLECharacteristic * pCharacteristic) {
-      MSGLN("CMD write");
+      log_i("CMD write\n");
       ////// MUST implement!!
       //// CMD_CONFIG 0x00
       // MIC    0x01
@@ -260,23 +256,23 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
       //// CMD_DATA (only v2) 0x04
 
       std::string value = pCharacteristic->getValue();
-      MSGLN("CMD len:" + String(value.length()));
-      MSGLN(value.c_str());
+      log_i("CMD len:%d\n", value.length());
+      log_i("%s\n", value.c_str());
       const char *cmd_str = value.c_str();
-      MSGLN(cmd_str);
+      log_i("%s\n", cmd_str);
       char cmd = (cmd_str[0] >> 5);
       if (cmd == 0x02) {
         //// CMD_DISPLAY  0x02
-        MSGLN("CMD display");
+        log_i("CMD display\n");
         char cmd_display = cmd_str[0] & 0b11111;
         if (cmd_display == 0x00) {
           // CLEAR    0x00
-          MSGLN(">> clear");
+          log_i(">> clear\n");
           fillScreen(BLACK);
         } else if (cmd_display == 0x01) {
           // TEXT     0x01
-          MSGLN(">> text");
-          MSGLN(&(cmd_str[1]));
+          log_i(">> text\n");
+          log_i("%s\n", &(cmd_str[1]));
 #if !defined(ARDUINO_M5Stack_ATOM) && !defined(ARDUINO_WIO_TERMINAL)
           M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
           M5.Lcd.setCursor(0, 0);
@@ -289,7 +285,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #endif
         } else if (cmd_display == 0x02) {
           // PIXELS_0 0x02
-          MSGLN(">> pixel0");
+          log_i(">> pixel0\n");
           for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 5; x++) {
               pixel[y][x] = (cmd_str[y * 5 + (x + 1)] & 0xb);
@@ -297,7 +293,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           }
         } else if (cmd_display == 0x03) {
           // PIXELS_1 0x03
-          MSGLN(">> pixel1");
+          log_i(">> pixel1\n");
           for (int y = 3; y < 5; y++) {
             for (int x = 0; x < 5; x++) {
               pixel[y][x] = (cmd_str[(y - 3) * 5 + (x + 1)] & 0xb);
@@ -307,11 +303,11 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         }
       } else if (cmd == 0x03) {
         //// CMD_AUDIO  0x03
-        MSGLN("CMD audio");
+        log_i("CMD audio\n");
         char cmd_audio = cmd_str[0] & 0b11111;
         if (cmd_audio == 0x00) {
           // STOP_TONE  0x00
-          MSGLN(">> Stop tone");
+          log_i(">> Stop tone\n");
 #if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.mute();
 #elif defined(ARDUINO_M5Stick_C_Plus)
@@ -322,16 +318,16 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         } else if (cmd_audio == 0x01) {
           // PLAY_TONE  0x01
           const uint8_t max_volume = 5;
-          MSGLN(">> Play tone");
+          log_i(">> Play tone\n");
           uint32_t duration = (cmd_str[4] & 0xff) << 24
                               | (cmd_str[3] & 0xff) << 16
                               | (cmd_str[2] & 0xff) << 8
                               | (cmd_str[1] & 0xff);
           uint16_t freq = 1000000 / duration;
           uint8_t volume = map(cmd_str[5], 0, 255, 0, max_volume);
-          MSGLN("Volume:" + String(volume));
-          MSGLN("Duration:" + String(duration));
-          MSGLN("Freq:" + String(freq));
+          log_i("Volume:%d\n", volume);
+          log_i("Duration:%d\n", duration);
+          log_i("Freq:%d\n", freq);
 #if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.setVolume(volume);
           M5.Speaker.tone(freq);
@@ -362,14 +358,14 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 #else
       temp = lis.getTemperature();
       int light = (int)map(analogRead(WIO_LIGHT), 0, 511, 0, 255);
-      MSGLN(">> Light Level " + String(light));
+      log_i(">> Light Level " + String(light));
       state[4] = (light & 0xff); // lightlevel
       int mic = (int)map(analogRead(WIO_MIC), 0, 511, 0, 255);
       state[6] = (mic & 0xff); // soundlevel
-      MSGLN(">> sound Level " + String(mic));
+      log_i(">> sound Level " + String(mic));
 #endif
       state[5] = ((int)(temp + 128) & 0xff); // temperature(+128)
-      MSGLN("STATE read " + String((char *)state));
+      log_i("STATE read %s", (char *)state);
       pCharacteristic->setValue(state, 7);
     }
 };
@@ -401,7 +397,6 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
       updateIMU();
 
-      MSG("MOTION read:");
       motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
       motion[1] = (((int)(pitch * ACC_MULT) >> 8 ) & 0xff);
       motion[2] = ((int)(roll * ACC_MULT) & 0xff);
@@ -419,14 +414,14 @@ class MotionCallbacks: public BLECharacteristicCallbacks {
       for (int i = 0; i < sizeof(motion); i++) {
         sprintf(&msg[i * 3], "%02x,", motion[i], sizeof(motion) * 3 - 3 * i);
       }
-      MSGLN(msg);
+      log_i("MOTION read: %s\n", msg);
     }
 };
 
 // for button
 class ActionCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      MSGLN("BTN read");
+      log_i("BTN read\n");
       pCharacteristic->setValue("Read me!!"); // dummy data
     }
 };
@@ -435,7 +430,7 @@ class ActionCallbacks: public BLECharacteristicCallbacks {
 class AnalogPinCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
       int r = random(1024);
-      MSGLN("Analog Pin0 Read" + r);
+      log_i("Analog Pin0 Read:%d\n", r);
 
       analog[0] = (r & 0xff);
       analog[1] = ((r >> 8 ) & 0xff);
@@ -508,7 +503,7 @@ void setup() {
     char ID_char = (((mac0[i] - 0x61) & 0b0011110) >> 1) + 0x61;
     ID += ID_char;
   }
-  MSGLN("ID char:" + ID);
+  log_i("ID char:%s\n", ID.c_str());
   char adv_str[32] = {0};
   String("BBC micro:bit [" + ID + "]").toCharArray(adv_str, sizeof(adv_str));
 
@@ -541,8 +536,8 @@ void setup() {
 #endif
 #endif
 
-  MSGLN("BLE start.");
-  MSGLN(adv_str);
+  log_i("BLE start.\n");
+  log_i("%s\n", adv_str);
 #if defined(ARDUINO_M5Stack_Core_ESP32)
   m5.Speaker.mute();
 #endif
@@ -681,20 +676,20 @@ void loop() {
     action[1] = 0x01;
     if (btnA) {
       // Button CLICK
-      MSGLN("Button A clicked!");
+      log_i("Button A clicked!\n");
       action[3] = 0x03;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
     if (btn_statusA == 0 && prevA == 1) {
       // Button Up
-      MSGLN("Button A up!");
+      log_i("Button A up!\n");
       action[3] = 0x02;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     } else if (btn_statusA == 1 && prevA == 0) {
       // Button Down
-      MSGLN("Button A down!");
+      log_i("Button A down!\n");
       action[3] = 0x01;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
@@ -705,20 +700,20 @@ void loop() {
     action[1] = 0x02;
     if (btnB) {
       // Button CLICK
-      MSGLN("Button B clicked!");
+      log_i("Button B clicked!\n");
       action[3] = 0x03;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
     if (btn_statusB == 0 && prevB == 1) {
       // Button UP
-      MSGLN("Button B up!");
+      log_i("Button B up!\n");
       action[3] = 0x02;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     } else if (btn_statusB == 1 && prevB == 0) {
       // Button Down
-      MSGLN("Button B down!");
+      log_i("Button B down!\n");
       action[3] = 0x01;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
@@ -728,20 +723,20 @@ void loop() {
     //// Button C (LOGO)
     action[1] = 121; // LOGO 121
     if (btnC) {
-      MSGLN("Button C (LOGO) clicked!");
+      log_i("Button C (LOGO) clicked!\n");
       action[3] = 0x03; // Button CLICK
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     }
     if (btn_statusC == 0 && prevC == 1) {
       // Button UP
-      MSGLN("Button C (LOGO) released!");
+      log_i("Button C (LOGO) released!\n");
       action[3] = 0x02;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
     } else if (btn_statusC == 1 && prevC == 0) {
       // Button Down
-      MSGLN("Button C (LOGO) touched!");
+      log_i("Button C (LOGO) touched!\n");
       action[3] = 0x01;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
