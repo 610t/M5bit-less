@@ -48,7 +48,7 @@ SPEAKER Beep;
 
 //// GPIO
 // for PortB
-#define PIN0_INPUT 36 // analog input
+#define PIN0_INPUT GPIO_NUM_36 // analog input
 #define PIN1_INPUT GPIO_NUM_26
 
 // Mic for M5StickC/Plus
@@ -436,7 +436,6 @@ class AnalogPinCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
       int r = map(analogRead(PIN0_INPUT), 0, 4095, 0, 1024);
       log_i("Analog Pin0 Read:%d\n", r);
-      Serial.printf("Analog: %d\n", r);
 
       analog[0] = (r & 0xff);
       analog[1] = ((r >> 8 ) & 0xff);
