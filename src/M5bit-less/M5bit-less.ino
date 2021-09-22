@@ -219,7 +219,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer * pServer) {
       log_i("disconnect\n");
       deviceConnected = false;
-      setup();
+      ESP.restart();
     }
 };
 
