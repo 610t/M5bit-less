@@ -454,6 +454,12 @@ void setup() {
 #endif
 #endif
 
+#if defined(ARDUINO_M5Stick_C_Plus)
+  // Disable Pin25 to use Pin36.
+  gpio_pulldown_dis(GPIO_NUM_25);
+  gpio_pullup_dis(GPIO_NUM_25);
+#endif
+
 #if !defined(ARDUINO_WIO_TERMINAL)
   M5.IMU.Init(); // IMU for temperature, accel and gyro
 #else
