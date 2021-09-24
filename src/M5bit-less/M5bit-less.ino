@@ -46,10 +46,12 @@ SPEAKER Beep;
 #include <BLEServer.h>
 #include <BLE2902.h>
 
+#if !defined(ARDUINO_WIO_TERMINAL)
 //// GPIO
 // for PortB
 #define PIN0_INPUT GPIO_NUM_36 // analog input
 #define PIN1_INPUT GPIO_NUM_26
+#endif
 
 // Mic for M5StickC/Plus
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
@@ -224,7 +226,11 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer * pServer) {
       log_i("disconnect\n");
       deviceConnected = false;
+#if !defined(ARDUINO_WIO_TERMINAL)
       ESP.restart();
+#else
+      setup();
+#endif
     }
 };
 
@@ -434,7 +440,11 @@ class ActionCallbacks: public BLECharacteristicCallbacks {
 // for Analog pin
 class AnalogPinCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
-      int r = map(analogRead(PIN0_INPUT), 0, 4095, 0, 1024);
+#if !defined(ARDUINO_WIO_TERMINAL)
+      int r = map(analogRead(PIN0_INPUT), 0, 4095, 0, 1023);
+#else
+      int r = random(1024);
+#endif
       log_i("Analog Pin0 Read:%d\n", r);
 
       analog[0] = (r & 0xff);
