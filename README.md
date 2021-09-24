@@ -1,4 +1,6 @@
 # M5bit-less
+日本語/[English](README_en.md)
+
 ![M5bit Less](https://i.gyazo.com/37711fdbdec359e2834c6fbac1eb5bff.png)
 
 [M5bit Less](https://scrapbox.io/M5S/M5bit_Less)は、[Microbit More](https://microbit-more.github.io/)をM5Stackで使うためのM5Stack用プログラムです。
