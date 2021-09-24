@@ -443,7 +443,7 @@ class AnalogPinCallbacks: public BLECharacteristicCallbacks {
 #if !defined(ARDUINO_WIO_TERMINAL)
       int r = map(analogRead(PIN0_INPUT), 0, 4095, 0, 1023);
 #else
-      int r = random(1024);
+      int r = analogRead(0);
 #endif
       log_i("Analog Pin0 Read:%d\n", r);
 
