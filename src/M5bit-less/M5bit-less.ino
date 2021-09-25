@@ -763,6 +763,8 @@ void loop() {
       pCharacteristic[4]->notify();
     }
     prevC = btn_statusC;
+
+    updateGesture();
   }
 #if !defined(ARDUINO_WIO_TERMINAL)
   M5.update();
