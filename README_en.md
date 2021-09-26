@@ -18,6 +18,7 @@ Please check a supported funciton table.
 - Wio Terminal
 
 ## Supported functions at Microbit More
+- Gesture
 - Connected and disconnected event block
 - Acceleration input (need IMU)
 - Display pattern
@@ -29,16 +30,17 @@ Please check a supported funciton table.
 - Light intensity
 - Temperature
 
-|device|acceleration|display pattern|display text|play tone|sound level|button input|light intensity|temperature|Note|
-|---|---|---|---|---|---|---|---|---|---|
-|M5Stack Basic|△IMU|o|o|o|x|A,B,C(LOGO)|x|△IMU||
-|M5Stack Gray |o|o|o|o|x|A,B,C(LOGO)|x|o||
-|M5Stack Core2|o|o|o|o|x|A,B,C(LOGO)|x|o||
-|M5StickC|o|o|o|x|o(With mic model)|A,B|x|o||
-|M5StickC Plus|o|o|o|o|o|A,B|x|o||
-|ATOM Matrix|o|o|△|x|x|A|x|o|Too weak BLE|
-|Wio Terminal|o|o|o|o|o|A,B,C(LOGO)|o|o| |
+|device|gesture|acceleration|display pattern|display text|play tone|sound level|button input|light intensity|temperature|Note|
+|---|---|---|---|---|---|---|---|---|---|---|
+|M5Stack Basic|-(IMU)|△IMU|o|o|o|x|A,B,C(LOGO)|x|△IMU||
+|M5Stack Gray |-|o|o|o|o|x|A,B,C(LOGO)|x|o||
+|M5Stack Core2|o|o|o|o|o|x|A,B,C(LOGO)|x|o||
+|M5StickC|-|o|o|o|x|o(With mic model)|A,B|x|o||
+|M5StickC Plus|o|o|o|o|o|o|A,B|x|o||
+|ATOM Matrix|-|o|o|△|x|x|A|x|o|Too weak BLE|
+|Wio Terminal|o|o|o|o|o|o|A,B,C(LOGO)|o|o| |
 - △:Implementable
+- -:Not check yet
 
 # How to use
 ## Prepare for the M5Stack
@@ -63,7 +65,6 @@ You can use like a Microbit More for micro:bit.
 # TODO
 ## Implementable but not implement yet
 The following items can be implemented, but have not yet been implemented.
-- Gesture (shake, face up, ...)
 - Message exchange using labels and data.
 - Pin 0-2 I/O(GPIO, PWM, ADC, Servo, ...)
 

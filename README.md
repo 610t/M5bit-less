@@ -18,6 +18,7 @@ Arduino IDEで作成しています。
 - Wio Terminal
 
 ## サポートしている機能
+- ジェスチャー
 - つながったときイベントブロック
 - 加速度の入力(IMUを持つM5Stack Gray, M5StickC、MPU6886ユニット([M5Stack用6軸IMUユニット](https://www.switch-science.com/catalog/6623/)など)が必要です)
 - パターンの表示
@@ -29,16 +30,17 @@ Arduino IDEで作成しています。
 - 明るさ
 - 温度
 
-|機種/device|加速度入力/acceleration|パターン表示/display pattern|文字列表示/display text|音を鳴らす/play tone|音の大きさ/sound level|ボタン/button input|明るさ/light intensity|温度/temperature|備考/Note|
-|---|---|---|---|---|---|---|---|---|---|
-|M5Stack Basic|△別途IMU必要|o|o|o|x|A,B,C(LOGO)|x|△別途IMU必要||
-|M5Stack Gray |o|o|o|o|x|A,B,C(LOGO)|x|o||
-|M5Stack Core2|o|o|o|o|x|A,B,C(LOGO)|x|o||
-|M5StickC|o|o|o|x|o(マイク付きモデル)|A,B|x|o||
-|M5StickC Plus|o|o|o|o|o|A,B|x|o||
-|ATOM Matrix|o|o|△|x|x|A|x|o|電波が弱い|
-|Wio Terminal|o|o|o|o|o|A,B,C(LOGO)|o|o| |
+|機種/device|ジェスチャー/Gesture|加速度入力/acceleration|パターン表示/display pattern|文字列表示/display text|音を鳴らす/play tone|音の大きさ/sound level|ボタン/button input|明るさ/light intensity|温度/temperature|備考/Note|
+|---|---|---|---|---|---|---|---|---|---|---|
+|M5Stack Basic|-(IMU)|△別途IMU必要|o|o|o|x|A,B,C(LOGO)|x|△別途IMU必要||
+|M5Stack Gray |-|o|o|o|o|x|A,B,C(LOGO)|x|o||
+|M5Stack Core2|o|o|o|o|o|x|A,B,C(LOGO)|x|o||
+|M5StickC|-|o|o|o|x|o(マイク付きモデル)|A,B|x|o||
+|M5StickC Plus|o|o|o|o|o|o|A,B|x|o||
+|ATOM Matrix|-|o|o|△|x|x|A|x|o|電波が弱い|
+|Wio Terminal|o|o|o|o|o|o|A,B,C(LOGO)|o|o| |
 - △:対応可能だがまだ実装できていないもの。
+- -:まだ動作確認できてないもの
 
 # どうやって使うの?
 ## M5Stack側の準備
@@ -63,7 +65,6 @@ Microbit Moreの拡張機能を追加します。
 # TODO
 ## 実装可能だか未実装の項目
 以下の項目は実装可能ですが、まだ実装していないものです。
-- ジェスチャー(ゆさぶられたなど)
 - ラベルとデータを使ったメッセージのやりとり
 - ピンへの入出力(GPIO, PWM, ADC, Servoなど)
 
