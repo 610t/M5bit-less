@@ -37,7 +37,7 @@ Arduino IDEで作成しています。
 |M5Stack Core2|o|o|o|o|o|x|A,B,C(LOGO)|x|o||
 |M5StickC|o|o|o|o|x|o(マイク付きモデル)|A,B|x|o||
 |M5StickC Plus|o|o|o|o|o|o|A,B|x|o||
-|ATOM Matrix|-|o|o|△|x|x|A|x|o|電波が弱い|
+|ATOM Matrix|o|o|o|△|x|x|A|x|o|電波が弱い|
 |Wio Terminal|o|o|o|o|o|o|A,B,C(LOGO)|o|o| |
 - △:対応可能だがまだ実装できていないもの。
 - -:まだ動作確認できてないもの

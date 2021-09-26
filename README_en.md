@@ -37,7 +37,7 @@ Please check a supported funciton table.
 |M5Stack Core2|o|o|o|o|o|x|A,B,C(LOGO)|x|o||
 |M5StickC|o|o|o|o|x|o(With mic model)|A,B|x|o||
 |M5StickC Plus|o|o|o|o|o|o|A,B|x|o||
-|ATOM Matrix|-|o|o|△|x|x|A|x|o|Too weak BLE|
+|ATOM Matrix|o|o|o|△|x|x|A|x|o|Too weak BLE|
 |Wio Terminal|o|o|o|o|o|o|A,B,C(LOGO)|o|o| |
 - △:Implementable
 - -:Not check yet
