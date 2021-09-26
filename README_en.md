@@ -46,6 +46,10 @@ Please check a supported funciton table.
 ## Prepare for the M5Stack
 Compile & download [src/M5bit-less/M5bit-less.ino](src/M5bit-less/M5bit-less.ino).
 
+### Notes on M5Stack Core2
+In M5Stack Core2, even if the compilation is successfully completed and downloaded, the initial screen may not be displayed and the program may not work.
+In this case, please try disabling PSRAM in Tools->PSRAM.
+
 ## Prepare for the Scratch
 Microbit More can be used as an extension in [stretch3](https://stretch3.github.io/).
 

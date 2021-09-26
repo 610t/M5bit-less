@@ -46,6 +46,10 @@ Arduino IDEで作成しています。
 ## M5Stack側の準備
 [src/M5bit-less/M5bit-less.ino](src/M5bit-less/M5bit-less.ino)をArduino IDEからコンパイルして、M5Stackにダウンロードします。
 
+### M5Stack Core2に関する注意事項
+M5Stack Core2では、正常にコンパイルが終了してダウンロードできても、初期画面が表示されず動作しない時があります。
+その場合、ツール->PSRAMを無効(Disable)にしてみて下さい。
+
 ## Scratch側の準備
 Microbit Moreは、[stretch3](https://stretch3.github.io/)などで拡張機能として使うことができます。
 
