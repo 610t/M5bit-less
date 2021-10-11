@@ -119,7 +119,7 @@ void mic_record_task (void* arg)
 #define ADVERTISING_STRING         "BBC micro:bit [m5scr]"
 
 // COMMAND CH 20byte
-uint8_t cmd[] = {0x01, // microbit version (v1:0x01, v2:0x02)
+uint8_t cmd[] = {0x02, // microbit version (v1:0x01, v2:0x02)
                  0x02, // protocol 0x02 only
                  0x00, 0x00, 0x00, 0x00, 0x00,
                  0x00, 0x00, 0x00, 0x00, 0x00,
