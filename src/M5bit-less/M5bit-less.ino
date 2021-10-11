@@ -648,6 +648,15 @@ void setup() {
 }
 
 void sendBtn(uint8_t btn, uint8_t btn_status, uint8_t prev) {
+  action[0] = 0x01; // for Button event
+
+  // Set TimeStamp (Little Endian)
+  uint32_t time = (uint32_t)millis();
+  action[4] = (time & 0xff);
+  action[5] = (time >> 8) & 0xff;
+  action[6] = (time >> 16) & 0xff;
+  action[7] = (time >> 24) & 0xff;
+
   if (btn) {
     // Button CLICK
     log_i("Button clicked!\n");
@@ -675,13 +684,6 @@ void sendBtn(uint8_t btn, uint8_t btn_status, uint8_t prev) {
 uint8_t prevA = 0, prevB = 0, prevC = 0;
 
 void loop() {
-  uint32_t time = (uint32_t)millis();
-  // Set TimeStamp (Little Endian)
-  action[4] = (time & 0xff);
-  action[5] = (time >> 8) & 0xff;
-  action[6] = (time >> 16) & 0xff;
-  action[7] = (time >> 24) & 0xff;
-
   if (deviceConnected) {
     // Send notify data for button A, B and C(LOGO).
     uint8_t btnA = 0, btnB = 0, btnC = 0,
