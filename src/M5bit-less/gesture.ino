@@ -10,6 +10,8 @@ void sendGesture(uint8_t gesture)
 
   //// Gesture
   action[0] = 0x02;
+  action[19] = 0x12; // ACTION_EVENT
+
   action[1] = gesture & 0xff;
 
   // Set TimeStamp (Little Endian)

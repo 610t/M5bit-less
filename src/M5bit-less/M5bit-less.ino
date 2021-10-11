@@ -649,6 +649,7 @@ void setup() {
 
 void sendBtn(uint8_t btn, uint8_t btn_status, uint8_t prev) {
   action[0] = 0x01; // for Button event
+  action[19] = 0x12; // ACTION_EVENT
 
   // Set TimeStamp (Little Endian)
   uint32_t time = (uint32_t)millis();
@@ -659,8 +660,7 @@ void sendBtn(uint8_t btn, uint8_t btn_status, uint8_t prev) {
 
   if (btn) {
     // Button CLICK
-    log_i("Button clicked!\n");
-    Serial.printf(" button clicked!\n");
+    log_i(" button clicked!\n");
     action[3] = 0x03;
     pCharacteristic[4]->setValue(action, 20);
     pCharacteristic[4]->notify();
