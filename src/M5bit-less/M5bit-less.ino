@@ -647,6 +647,30 @@ void setup() {
   pAdvertising->start();
 }
 
+void sendBtn(uint8_t btn, uint8_t btn_status, uint8_t prev) {
+  if (btn) {
+    // Button CLICK
+    log_i("Button clicked!\n");
+    Serial.printf(" button clicked!\n");
+    action[3] = 0x03;
+    pCharacteristic[4]->setValue(action, 20);
+    pCharacteristic[4]->notify();
+  }
+  if (btn_status == 0 && prev == 1) {
+    // Button Up
+    log_i(" button up!\n");
+    action[3] = 0x02;
+    pCharacteristic[4]->setValue(action, 20);
+    pCharacteristic[4]->notify();
+  } else if (btn_status == 1 && prev == 0) {
+    // Button Down
+    log_i(" button down!\n");
+    action[3] = 0x01;
+    pCharacteristic[4]->setValue(action, 20);
+    pCharacteristic[4]->notify();
+  }
+}
+
 // Previous button state
 uint8_t prevA = 0, prevB = 0, prevC = 0;
 
@@ -695,73 +719,17 @@ void loop() {
 
     //// Button A
     action[1] = 0x01;
-    if (btnA) {
-      // Button CLICK
-      log_i("Button A clicked!\n");
-      action[3] = 0x03;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    }
-    if (btn_statusA == 0 && prevA == 1) {
-      // Button Up
-      log_i("Button A up!\n");
-      action[3] = 0x02;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    } else if (btn_statusA == 1 && prevA == 0) {
-      // Button Down
-      log_i("Button A down!\n");
-      action[3] = 0x01;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    }
+    sendBtn(btnA, btn_statusA, prevA);
     prevA = btn_statusA;
 
     //// Button B
     action[1] = 0x02;
-    if (btnB) {
-      // Button CLICK
-      log_i("Button B clicked!\n");
-      action[3] = 0x03;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    }
-    if (btn_statusB == 0 && prevB == 1) {
-      // Button UP
-      log_i("Button B up!\n");
-      action[3] = 0x02;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    } else if (btn_statusB == 1 && prevB == 0) {
-      // Button Down
-      log_i("Button B down!\n");
-      action[3] = 0x01;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    }
+    sendBtn(btnB, btn_statusB, prevB);
     prevB = btn_statusB;
 
     //// Button C (LOGO)
     action[1] = 121; // LOGO 121
-    if (btnC) {
-      log_i("Button C (LOGO) clicked!\n");
-      action[3] = 0x03; // Button CLICK
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    }
-    if (btn_statusC == 0 && prevC == 1) {
-      // Button UP
-      log_i("Button C (LOGO) released!\n");
-      action[3] = 0x02;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    } else if (btn_statusC == 1 && prevC == 0) {
-      // Button Down
-      log_i("Button C (LOGO) touched!\n");
-      action[3] = 0x01;
-      pCharacteristic[4]->setValue(action, 20);
-      pCharacteristic[4]->notify();
-    }
+    sendBtn(btnC, btn_statusC, prevC);
     prevC = btn_statusC;
 
     updateGesture();
