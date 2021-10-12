@@ -8,6 +8,8 @@ void sendGesture(uint8_t gesture)
 {
   log_i("Gesture:%d\n", gesture);
 
+  memset((char *)(action), 0, 20); // clear action buffer
+
   //// Gesture
   action[0] = 0x02;
   action[19] = 0x12; // ACTION_EVENT

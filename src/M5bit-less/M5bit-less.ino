@@ -647,9 +647,13 @@ void setup() {
   pAdvertising->start();
 }
 
-void sendBtn(uint8_t btn, uint8_t btn_status, uint8_t prev) {
+void sendBtn(uint8_t btnID, uint8_t btn, uint8_t btn_status, uint8_t prev) {
+  memset((char *)(action), 0, 20); // clear action buffer
+
   action[0] = 0x01; // for Button event
   action[19] = 0x12; // ACTION_EVENT
+
+  action[1] = btnID; // btnID 0x01:BtnA, 0x02:BtnB, 121:BtnC(LOGO)
 
   // Set TimeStamp (Little Endian)
   uint32_t time = (uint32_t)millis();
@@ -721,17 +725,17 @@ void loop() {
 
     //// Button A
     action[1] = 0x01;
-    sendBtn(btnA, btn_statusA, prevA);
+    sendBtn(0x01, btnA, btn_statusA, prevA);
     prevA = btn_statusA;
 
     //// Button B
     action[1] = 0x02;
-    sendBtn(btnB, btn_statusB, prevB);
+    sendBtn(0x02, btnB, btn_statusB, prevB);
     prevB = btn_statusB;
 
     //// Button C (LOGO)
     action[1] = 121; // LOGO 121
-    sendBtn(btnC, btn_statusC, prevC);
+    sendBtn(121, btnC, btn_statusC, prevC);
     prevC = btn_statusC;
 
     updateGesture();
