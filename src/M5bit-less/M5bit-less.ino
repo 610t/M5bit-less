@@ -264,7 +264,6 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
       // SET_SERVO  0x03
       // SET_PULL   0x04
       // SET_EVENT  0x05
-      //// CMD_DATA (only v2) 0x04
 
       std::string value = pCharacteristic->getValue();
       log_i("CMD len:%d\n", value.length());
@@ -350,6 +349,17 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           Beep.tone(freq);
 #endif
         }
+      } else if (cmd == 0x04) {
+        //// CMD_DATA (only v2) 0x04
+        log_i("CMD DATA\n");
+
+        char label[9] = {0};
+        char data[12] = {0};
+
+        strncpy(label, &cmd_str[1], sizeof(label) - 1);
+        strncpy(data, &cmd_str[9], sizeof(data) - 1);
+        Serial.printf("Label:%s\n", label);
+        Serial.printf("Data :%s\n", data);
       }
     }
 };
