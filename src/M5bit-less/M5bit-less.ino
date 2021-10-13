@@ -686,6 +686,7 @@ void sendBtn(uint8_t btnID, uint8_t btn, uint8_t btn_status, uint8_t prev) {
 
 // Previous button state
 uint8_t prevA = 0, prevB = 0, prevC = 0;
+uint32_t old_label_time = 0;
 
 void loop() {
   if (deviceConnected) {
@@ -739,7 +740,22 @@ void loop() {
     prevC = btn_statusC;
 
     updateGesture();
+
+    // Send dummy data label='a' data=random('a'-'z') every 50ms
+    uint32_t label_time = (uint32_t)millis();
+    if (label_time - old_label_time > 50) {
+      memset((char *)(action), 0, 20); // clear action buffer
+      action[19] = 0x14; // DATA_TEXT
+      action[0] = 0x61; // 'a'
+      action[1] = 0;
+      action[8] = 0x61 + random(26); // 'a-z'
+      action[9] = 0;
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+      old_label_time = label_time;
+    }
   }
+
 #if !defined(ARDUINO_WIO_TERMINAL)
   M5.update();
 #endif
