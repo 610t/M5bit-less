@@ -286,6 +286,13 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #if !defined(ARDUINO_M5Stack_ATOM) && !defined(ARDUINO_WIO_TERMINAL)
           M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
           M5.Lcd.setCursor(0, 0);
+#if defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
+          M5.Lcd.setTextSize(4);
+#elif defined(ARDUINO_M5Stick_C)
+          M5.Lcd.setTextSize(2);
+#else // M5Stick C Plus
+          M5.Lcd.setTextSize(3);
+#endif
           M5.Lcd.println(&(cmd_str[1]));
 #elif defined(ARDUINO_WIO_TERMINAL)
           tft.fillRect(0, 0, 320, TEXT_SPACE - 1, BLACK);
@@ -548,22 +555,17 @@ void setup() {
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.setTextSize(2);
   tft.setCursor(0, 0);
-  tft.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
+  tft.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
   tft.println(adv_str);
 #else
 #if !defined(ARDUINO_M5Stack_ATOM)
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-  M5.Lcd.setTextSize(2);
-#else
+#if defined(ARDUINO_M5Stick_C)
   M5.Lcd.setTextSize(1);
-#endif
-  M5.Lcd.print("Welcome to\nM5bit Less!!\n\nPlease connect to\n");
-  M5.Lcd.println(adv_str);
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-  M5.Lcd.setTextSize(4);
 #else
   M5.Lcd.setTextSize(2);
 #endif
+  M5.Lcd.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
+  M5.Lcd.println(adv_str);
 #endif
 #endif
 
