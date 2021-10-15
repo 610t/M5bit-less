@@ -367,6 +367,34 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         strncpy(data, &cmd_str[9], sizeof(data) - 1);
         Serial.printf("Label:%s\n", label);
         Serial.printf("Data :%s\n", data);
+
+#if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
+        M5.Lcd.setTextSize(1);
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C)
+#define LABEL_LOCATION 110
+#elif defined(ARDUINO_M5Stick_C_Plus)
+#define LABEL_LOCATION 170
+#endif
+        M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
+        M5.Lcd.setCursor(0, LABEL_LOCATION);
+        M5.Lcd.printf("Label:%s\n", label);
+        M5.Lcd.printf("Data:%s\n", data);
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
+#define LABEL_LOCATION_X 210
+#define LABEL_LOCATION_Y 40
+#define FONT_HEIGHT 10
+        M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
+        M5.Lcd.printf("Label:");
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 1);
+        M5.Lcd.printf("%s", label);
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 2);
+        M5.Lcd.printf("Data :");
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
+        M5.Lcd.printf("%s", data);
+#endif
+#endif
       }
     }
 };
