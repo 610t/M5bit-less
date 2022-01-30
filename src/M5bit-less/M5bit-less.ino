@@ -395,6 +395,19 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         M5.Lcd.printf("%s", data);
 #endif
 #endif
+
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+        // Sample implementation label & data event handling for M5StickC and Plus.
+        // If the label "led" is data "on", the LED is turned on;
+        //  otherwise, the LED is turned off.
+        if (strcmp(label, "led") == 0) {
+          if (strcmp(data, "on") == 0) {
+            digitalWrite(M5_LED, LOW);
+          } else {
+            digitalWrite(M5_LED, HIGH);
+          }
+        }
+#endif
       }
     }
 };
@@ -551,6 +564,9 @@ void setup() {
   // for Mic input
   i2sInit();
   xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
+  // LED
+  pinMode(M5_LED, OUTPUT);
+  digitalWrite(M5_LED, HIGH);
 #endif
 
   // Create MAC address base fixed ID
