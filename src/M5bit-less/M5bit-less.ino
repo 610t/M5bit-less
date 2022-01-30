@@ -5,7 +5,7 @@
 #include <M5Core2.h>
 #elif defined(ARDUINO_M5Stick_C)
 #include <M5StickC.h>
-#elif defined(ARDUINO_M5Stick_C_Plus)
+#elif defined(ARDUINO_M5Stick_C_PLUS)
 #include <M5StickCPlus.h>
 #elif defined(ARDUINO_M5Stack_ATOM)
 #include <M5Atom.h>
@@ -54,7 +54,7 @@ SPEAKER Beep;
 #endif
 
 // Mic for M5StickC/Plus
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #include <driver/i2s.h>
 
 #define PIN_CLK  0
@@ -327,7 +327,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           log_i(">> Stop tone\n");
 #if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.mute();
-#elif defined(ARDUINO_M5Stick_C_Plus)
+#elif defined(ARDUINO_M5Stick_C_PLUS)
           M5.Beep.mute();
 #elif defined(ARDUINO_WIO_TERMINAL)
           Beep.mute();
@@ -348,7 +348,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #if defined(ARDUINO_M5Stack_Core_ESP32)
           M5.Speaker.setVolume(volume);
           M5.Speaker.tone(freq);
-#elif defined(ARDUINO_M5Stick_C_Plus)
+#elif defined(ARDUINO_M5Stick_C_PLUS)
           M5.Beep.setVolume(volume);
           M5.Beep.tone(freq);
 #elif defined(ARDUINO_WIO_TERMINAL)
@@ -370,10 +370,10 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 
 #if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
         M5.Lcd.setTextSize(1);
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #if defined(ARDUINO_M5Stick_C)
 #define LABEL_LOCATION 110
-#elif defined(ARDUINO_M5Stick_C_Plus)
+#elif defined(ARDUINO_M5Stick_C_PLUS)
 #define LABEL_LOCATION 170
 #endif
         M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
@@ -396,7 +396,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #endif
 #endif
 
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
         // Sample implementation label & data event handling for M5StickC and Plus.
         // If the label "led" is data "on", the LED is turned on;
         //  otherwise, the LED is turned off.
@@ -419,7 +419,7 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 #if !defined(ARDUINO_WIO_TERMINAL)
       M5.IMU.getTempData(&temp); // get temperature from IMU
       state[4] = (random(256) & 0xff); // Random sensor value for lightlevel
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
       state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff); // Random sensor value for soundlevel
 #else
       state[6] = (random(256) & 0xff); // Random sensor value for soundlevel
@@ -522,7 +522,7 @@ void setup() {
 #endif
 #endif
 
-#if defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C_PLUS)
   // Disable Pin25 to use Pin36.
   gpio_pulldown_dis(GPIO_NUM_25);
   gpio_pullup_dis(GPIO_NUM_25);
@@ -560,7 +560,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 #endif
 
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_Plus)
+#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
   // for Mic input
   i2sInit();
   xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
