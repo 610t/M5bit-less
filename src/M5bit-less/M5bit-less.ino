@@ -591,11 +591,6 @@ void setup() {
   char adv_str[32] = {0};
   String("BBC micro:bit [" + ID + "]").toCharArray(adv_str, sizeof(adv_str));
 
-#if !defined(ARDUINO_M5Stack_ATOM) && !defined(ARDUINO_WIO_TERMINAL)
-  M5.Lcd.begin();
-  M5.Lcd.fillScreen(BLACK);
-#endif
-
   // Start up screen
   fillScreen(BLUE);
 #if defined(ARDUINO_WIO_TERMINAL)
@@ -618,7 +613,7 @@ void setup() {
   log_i("BLE start.\n");
   log_i("%s\n", adv_str);
 #if defined(ARDUINO_M5Stack_Core_ESP32)
-  m5.Speaker.mute();
+  M5.Speaker.mute();
 #endif
   BLEDevice::init(adv_str);
   BLEServer *pServer = BLEDevice::createServer();
