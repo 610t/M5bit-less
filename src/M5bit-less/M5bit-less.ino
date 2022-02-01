@@ -441,7 +441,9 @@ class StateCallbacks: public BLECharacteristicCallbacks {
 
 // for accelerometer related values
 #define ACC_MULT 512
+#if !defined(RAD_TO_DEG)
 #define RAD_TO_DEG 57.324
+#endif
 float ax, ay, az;
 int16_t iax, iay, iaz;
 int16_t gx, gy, gz;
