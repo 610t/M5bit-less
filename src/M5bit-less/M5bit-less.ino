@@ -485,8 +485,16 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           if (data_str.compareTo("drawLine") == 0) {
             log_i("Draw line (%d,%d) - (%d,%d) with %d\n", x_0, y_0, x_1, y_1, c);
             M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
+          } else if (data_str.compareTo("fillScreen") == 0) {
+            M5.Lcd.fillScreen(c);
           } else if (data_str.compareTo("fillRect") == 0) {
             M5.Lcd.fillRect(x_0, y_0, w, h, c);
+          } else if (data_str.compareTo("fillCircle") == 0) {
+            M5.Lcd.fillCircle(x_0, y_0, r, c);
+          } else if (data_str.compareTo("fillTriangl") == 0) { // "fillTriangle" is over data length limit.
+            M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+          } else if (data_str.compareTo("fillRoundRe") == 0) { // "fillRoundRect" is over data length limit.
+            M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
           }
         }
       }
