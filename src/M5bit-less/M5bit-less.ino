@@ -369,7 +369,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         Serial.printf("Data :%s\n", data);
 
 #if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
-        M5.Lcd.setTextSize(1);
+        M5.Lcd.setTextSize(2);
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #if defined(ARDUINO_M5Stick_C)
 #define LABEL_LOCATION 110
@@ -380,10 +380,11 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         M5.Lcd.setCursor(0, LABEL_LOCATION);
         M5.Lcd.printf("Label:%s\n", label);
         M5.Lcd.printf("Data:%s\n", data);
+        //M5.Lcd.printf(" val:%.2f\n", data_val);
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 #define LABEL_LOCATION_X 210
 #define LABEL_LOCATION_Y 40
-#define FONT_HEIGHT 10
+#define FONT_HEIGHT 20
         M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
         M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
         M5.Lcd.printf("Label:");
