@@ -245,6 +245,17 @@ class DummyCallbacks: public BLECharacteristicCallbacks {
 };
 
 // for cmd
+// Global variable for drawing graphics using data & label.
+uint32_t x_0, y_0, x_1, y_1, x_2, y_2 = 0;  // (x,y) axis
+uint32_t w, h = 0;  // width & height
+uint32_t r = 0;     // radius for circle
+uint32_t c = 0;     // color
+
+void getLabelDataValue(char* var_name, String label_str, uint32_t *var, int data_val) {
+  if (label_str.compareTo(var_name) == 0) {
+    *var = data_val;
+  }
+}
 
 class CmdCallbacks: public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic * pCharacteristic) {
@@ -412,7 +423,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         M5.Lcd.setCursor(0, LABEL_LOCATION);
         M5.Lcd.printf("Label:%s\n", label);
         M5.Lcd.printf("Data:%s\n", data);
-        M5.Lcd.printf(" val:", data);
+        M5.Lcd.printf(" val:");
         if (data_val < 100000) {
           M5.Lcd.printf("%8.2f", data_val);
         } else {
@@ -455,6 +466,29 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           }
         }
 #endif
+
+        //// Draw LCD graphics using label & data.
+        // Store variables
+        getLabelDataValue("x0", label_str, &x_0, data_val);
+        getLabelDataValue("y0", label_str, &y_0, data_val);
+        getLabelDataValue("x1", label_str, &x_1, data_val);
+        getLabelDataValue("y1", label_str, &y_1, data_val);
+        getLabelDataValue("x2", label_str, &x_2, data_val);
+        getLabelDataValue("y2", label_str, &y_2, data_val);
+        getLabelDataValue("w", label_str, &w, data_val);
+        getLabelDataValue("h", label_str, &h, data_val);
+        getLabelDataValue("r", label_str, &r, data_val);
+        getLabelDataValue("c", label_str, &c, data_val);
+
+        // Do command
+        if (label_str.compareTo("cmd") == 0) {
+          if (data_str.compareTo("drawLine") == 0) {
+            log_i("Draw line (%d,%d) - (%d,%d) with %d\n", x_0, y_0, x_1, y_1, c);
+            M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
+          } else if (data_str.compareTo("fillRect") == 0) {
+            M5.Lcd.fillRect(x_0, y_0, w, h, c);
+          }
+        }
       }
     }
 };
