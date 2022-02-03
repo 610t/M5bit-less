@@ -360,31 +360,69 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         //// CMD_DATA (only v2) 0x04
         log_i("CMD DATA\n");
 
-        char label[9] = {0};
-        char data[12] = {0};
+        // Show input data.
+        log_i(">>> Data input:");
+        for (int i = 0; i <= 20; i++) {
+          log_i("(%d)%02x%c:", i, cmd_str[i], cmd_str[i]);
+        }
+        log_i("\n");
 
+        // Convert from input data to label & data.
+        char label[9] = {0};
         strncpy(label, &cmd_str[1], sizeof(label) - 1);
+        String label_str = String(label);
+
+        char data[12] = {0};
         strncpy(data, &cmd_str[9], sizeof(data) - 1);
-        Serial.printf("Label:%s\n", label);
-        Serial.printf("Data :%s\n", data);
+        String data_str = String(data);
+
+        // Convert from 8bit uint8_t x 4 to 32bit float with little endian.
+        static union {
+          uint32_t i;
+          uint8_t b[sizeof (float)];
+          float f;
+        } conv_data;
+        conv_data.b[0] = cmd_str[9];
+        conv_data.b[1] = cmd_str[10];
+        conv_data.b[2] = cmd_str[11];
+        conv_data.b[3] = cmd_str[12];
+        float data_val = conv_data.f;
+
+        log_i("Label str:%s, Data str:%s, Data value:%f.\n", label_str, data_str, data_val);
+
+        // Can't get correct command for number=0x13 and text=0x14. Why?
+        char cmd_data = cmd_str[20];
+        if (cmd_data == 0x13) {
+          log_i("Data is Number.\n");
+        } else if (cmd_data == 0x14) {
+          log_i("Data is Text.\n");
+        } else {
+          log_i("Data is Unknown:%02x.\n", cmd_data);
+        }
 
 #if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
-        M5.Lcd.setTextSize(2);
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #if defined(ARDUINO_M5Stick_C)
 #define LABEL_LOCATION 110
 #elif defined(ARDUINO_M5Stick_C_PLUS)
 #define LABEL_LOCATION 170
 #endif
+        M5.Lcd.setTextSize(1);
         M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
         M5.Lcd.setCursor(0, LABEL_LOCATION);
         M5.Lcd.printf("Label:%s\n", label);
         M5.Lcd.printf("Data:%s\n", data);
-        //M5.Lcd.printf(" val:%.2f\n", data_val);
+        M5.Lcd.printf(" val:", data);
+        if (data_val < 100000) {
+          M5.Lcd.printf("%8.2f", data_val);
+        } else {
+          M5.Lcd.printf("too big");
+        }
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 #define LABEL_LOCATION_X 210
 #define LABEL_LOCATION_Y 40
 #define FONT_HEIGHT 20
+        M5.Lcd.setTextSize(2);
         M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
         M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
         M5.Lcd.printf("Label:");
@@ -394,6 +432,14 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         M5.Lcd.printf("Data :");
         M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
         M5.Lcd.printf("%s", data);
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 4);
+        M5.Lcd.printf(" val:");
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 5);
+        if (data_val < 100000) {
+          M5.Lcd.printf("%8.2f", data_val);
+        } else {
+          M5.Lcd.printf("too big");
+        }
 #endif
 #endif
 
