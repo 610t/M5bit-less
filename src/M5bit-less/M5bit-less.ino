@@ -824,20 +824,25 @@ void loop() {
 #endif
 #endif
 
+#define BUTTON_DELAY 50
+
     //// Button A
     action[1] = 0x01;
     sendBtn(0x01, btnA, btn_statusA, prevA);
     prevA = btn_statusA;
+    delay(BUTTON_DELAY);
 
     //// Button B
     action[1] = 0x02;
     sendBtn(0x02, btnB, btn_statusB, prevB);
     prevB = btn_statusB;
+    delay(BUTTON_DELAY);
 
     //// Button C (LOGO)
     action[1] = 121; // LOGO 121
     sendBtn(121, btnC, btn_statusC, prevC);
     prevC = btn_statusC;
+    delay(BUTTON_DELAY);
 
     updateGesture();
 
