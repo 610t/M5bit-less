@@ -1,6 +1,7 @@
 #if defined(ARDUINO_M5Stack_Core_ESP32)
 #define M5STACK_MPU6886
 #include <M5Stack.h>
+#define FACES_KEYBOARD_I2C_ADDR 0x08
 #elif defined(ARDUINO_M5STACK_Core2)
 #include <M5Core2.h>
 #elif defined(ARDUINO_M5Stick_C)
@@ -906,6 +907,30 @@ void loop() {
       action[9] = 0;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
+#if defined(ARDUINO_M5Stack_Core_ESP32)
+      // keyboard input for M5Stack Faces
+      if (digitalRead(5) == LOW)
+      {
+        Wire.requestFrom(FACES_KEYBOARD_I2C_ADDR, 1);
+        while (Wire.available())
+        {
+          char c = Wire.read(); // receive a byte as character
+          Serial.printf("Key:%c\n", c);        // print the character
+          memset((char *)(action), 0, 20); // clear action buffer
+          action[19] = 0x14; // DATA_TEXT
+          action[0] = 0x4b; // 'K'
+          action[1] = 0x65; // 'e'
+          action[2] = 0x79; // 'y'
+          action[3] = 0x00;
+          action[8] = c; // Key character
+          action[9] = 0;
+          delay(50); // Wait 50ms
+          pCharacteristic[4]->setValue(action, 20);
+          pCharacteristic[4]->notify();
+        }
+      }
+#endif
+
       old_label_time = label_time;
     }
   }
