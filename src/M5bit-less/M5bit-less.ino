@@ -248,6 +248,10 @@ class DummyCallbacks: public BLECharacteristicCallbacks {
 // for cmd
 // Global variable for drawing graphics using data & label.
 uint32_t x_0, y_0, x_1, y_1, x_2, y_2 = 0;  // (x,y) axis
+uint32_t x_c, y_c = 0; // position of cursor for text
+String str = ""; // String for text output
+uint32_t size = 1; // text size
+uint32_t tc = 0; // text color
 uint32_t w, h = 0;  // width & height
 uint32_t r = 0;     // radius for circle
 uint32_t c = 0;     // color
@@ -420,6 +424,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #define LABEL_LOCATION 170
 #endif
         M5.Lcd.setTextSize(1);
+        M5.Lcd.setTextColor(WHITE);
         M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
         M5.Lcd.setCursor(0, LABEL_LOCATION);
         M5.Lcd.printf("Label:%s\n", label);
@@ -435,6 +440,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #define LABEL_LOCATION_Y 40
 #define FONT_HEIGHT 20
         M5.Lcd.setTextSize(2);
+        M5.Lcd.setTextColor(WHITE);
         M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
         M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
         M5.Lcd.printf("Label:");
@@ -476,6 +482,13 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
         getLabelDataValue("y1", label_str, &y_1, data_val);
         getLabelDataValue("x2", label_str, &x_2, data_val);
         getLabelDataValue("y2", label_str, &y_2, data_val);
+        getLabelDataValue("xc", label_str, &x_c, data_val);
+        getLabelDataValue("yc", label_str, &y_c, data_val);
+        if (label_str.compareTo("str") == 0) {
+          str = data_str;
+        }
+        getLabelDataValue("size", label_str, &size, data_val);
+        getLabelDataValue("tc", label_str, &tc, data_val);
         getLabelDataValue("w", label_str, &w, data_val);
         getLabelDataValue("h", label_str, &h, data_val);
         getLabelDataValue("r", label_str, &r, data_val);
@@ -503,6 +516,11 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
             M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
           } else if (data_str.compareTo("fillRoundRe") == 0) { // "fillRoundRect" is over data length limit.
             M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
+          } else if (data_str.compareTo("print") == 0) {
+            M5.Lcd.setCursor(x_c, y_c);
+            M5.Lcd.setTextColor(tc);
+            M5.Lcd.setTextSize(size);
+            M5.Lcd.print(str);
           }
         }
       }
