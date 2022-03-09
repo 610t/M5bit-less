@@ -247,6 +247,7 @@ class DummyCallbacks: public BLECharacteristicCallbacks {
 
 // for cmd
 // Global variable for drawing graphics using data & label.
+uint32_t label_flag = 0;
 uint32_t x_0, y_0, x_1, y_1, x_2, y_2 = 0;  // (x,y) axis
 uint32_t x_c, y_c = 0; // position of cursor for text
 String str = ""; // String for text output
@@ -309,6 +310,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #else // M5Stick C Plus
           M5.Lcd.setTextSize(3);
 #endif
+          M5.Lcd.setTextColor(WHITE);
           M5.Lcd.println(&(cmd_str[1]));
 #elif defined(ARDUINO_WIO_TERMINAL)
           tft.fillRect(0, 0, 320, TEXT_SPACE - 1, BLACK);
@@ -416,6 +418,7 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
           log_i("Data is Unknown:%02x.\n", cmd_data);
         }
 
+        if (label_flag != 0) {
 #if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #if defined(ARDUINO_M5Stick_C)
@@ -423,43 +426,44 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #elif defined(ARDUINO_M5Stick_C_PLUS)
 #define LABEL_LOCATION 170
 #endif
-        M5.Lcd.setTextSize(1);
-        M5.Lcd.setTextColor(WHITE);
-        M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
-        M5.Lcd.setCursor(0, LABEL_LOCATION);
-        M5.Lcd.printf("Label:%s\n", label);
-        M5.Lcd.printf("Data:%s\n", data);
-        M5.Lcd.printf(" val:");
-        if (data_val < 100000) {
-          M5.Lcd.printf("%8.2f", data_val);
-        } else {
-          M5.Lcd.printf("too big");
-        }
+          M5.Lcd.setTextSize(1);
+          M5.Lcd.setTextColor(WHITE);
+          M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
+          M5.Lcd.setCursor(0, LABEL_LOCATION);
+          M5.Lcd.printf("Label:%s\n", label);
+          M5.Lcd.printf("Data:%s\n", data);
+          M5.Lcd.printf(" val:");
+          if (data_val < 100000) {
+            M5.Lcd.printf("%8.2f", data_val);
+          } else {
+            M5.Lcd.printf("too big");
+          }
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 #define LABEL_LOCATION_X 210
 #define LABEL_LOCATION_Y 40
 #define FONT_HEIGHT 20
-        M5.Lcd.setTextSize(2);
-        M5.Lcd.setTextColor(WHITE);
-        M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
-        M5.Lcd.printf("Label:");
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 1);
-        M5.Lcd.printf("%s", label);
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 2);
-        M5.Lcd.printf("Data :");
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
-        M5.Lcd.printf("%s", data);
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 4);
-        M5.Lcd.printf(" val:");
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 5);
-        if (data_val < 100000) {
-          M5.Lcd.printf("%8.2f", data_val);
-        } else {
-          M5.Lcd.printf("too big");
+          M5.Lcd.setTextSize(2);
+          M5.Lcd.setTextColor(WHITE);
+          M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
+          M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
+          M5.Lcd.printf("Label:");
+          M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 1);
+          M5.Lcd.printf("%s", label);
+          M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 2);
+          M5.Lcd.printf("Data :");
+          M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
+          M5.Lcd.printf("%s", data);
+          M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 4);
+          M5.Lcd.printf(" val:");
+          M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 5);
+          if (data_val < 100000) {
+            M5.Lcd.printf("%8.2f", data_val);
+          } else {
+            M5.Lcd.printf("too big");
+          }
+#endif
+#endif
         }
-#endif
-#endif
 
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
         // Sample implementation label & data event handling for M5StickC and Plus.
@@ -475,6 +479,8 @@ class CmdCallbacks: public BLECharacteristicCallbacks {
 #endif
 
         //// Draw LCD graphics using label & data.
+        // Display label & data?
+        getLabelDataValue("label", label_str, &label_flag, data_val);
         // Store variables
         getLabelDataValue("x0", label_str, &x_0, data_val);
         getLabelDataValue("y0", label_str, &y_0, data_val);
