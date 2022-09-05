@@ -126,6 +126,13 @@ label & data拡張は、ScratchとM5Stackの間で、文字列labelで、値がd
 
 
 ## 動画/発表資料
+### M5StackとScratchのより良い関係:覚醒編; for  [IoT縛りの勉強会! IoTLT vol.85](https://iotlt.connpass.com/event/239891/)
+- [発表資料](https://scrapbox.io/M5S/M5Stack%E3%81%A8Scratch%E3%81%AE%E3%82%88%E3%82%8A%E8%89%AF%E3%81%84%E9%96%A2%E4%BF%82:%E8%A6%9A%E9%86%92%E7%B7%A8)
+
+[![M5StackとScratchのより良い関係:覚醒編動画1](https://img.youtube.com/vi/Vk8FoH25KJg/0.jpg)](https://youtu.be/Vk8FoH25KJg)
+
+[![M5StackとScratchのより良い関係:覚醒編動画2](https://img.youtube.com/vi/FYaJ7QR_N-g/0.jpg)](https://youtu.be/FYaJ7QR_N-g)
+
 ### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
 - [発表資料](https://protopedia.net/prototype/2395)
 
