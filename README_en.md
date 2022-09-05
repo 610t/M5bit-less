@@ -69,7 +69,6 @@ You can use like a Microbit More for micro:bit.
 # TODO
 ## Implementable but not implement yet
 The following items can be implemented, but have not yet been implemented.
-- Message exchange using labels and data.
 - Pin 0-2 I/O(GPIO, PWM, ADC, Servo, ...)
 
 ## Features missing at the (standard) M5Stack
