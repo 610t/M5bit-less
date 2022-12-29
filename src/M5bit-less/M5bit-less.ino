@@ -1,14 +1,13 @@
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-#define M5STACK_MPU6886
-#include <M5Stack.h>
-#elif defined(ARDUINO_M5STACK_Core2)
-#include <M5Core2.h>
-#elif defined(ARDUINO_M5Stick_C)
-#include <M5StickC.h>
-#elif defined(ARDUINO_M5Stick_C_PLUS)
-#include <M5StickCPlus.h>
-#elif defined(ARDUINO_M5Stack_ATOM)
-#include <M5Atom.h>
+#if !defined(ARDUINO_WIO_TERMINAL)
+#include <M5Unified.h>
+#endif
+
+#if defined(ARDUINO_M5Stack_ATOM)
+#include <FastLED.h>
+#define NUM_LEDS 25
+#define LED_DATA_PIN 27
+CRGB leds[NUM_LEDS];
+
 // Colours
 #define WHITE CRGB::White
 #define BLACK CRGB::Black
@@ -39,7 +38,6 @@ SPEAKER Beep;
 #undef max
 #include <rpcBLEDevice.h>
 #else
-#include "utility/MahonyAHRS.h"
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #endif
@@ -169,23 +167,22 @@ bool deviceConnected = false;
 uint16_t pixel[5][5] = { 0 };
 
 void drawPixel(int x, int y, int c) {
-#if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
-  int w = M5.Lcd.width();
-  int h = M5.Lcd.height();
-#elif defined(ARDUINO_WIO_TERMINAL)
+#if defined(ARDUINO_WIO_TERMINAL)
   int w = 320;
   int h = 240;
+#else
+  int w = M5.Lcd.width();
+  int h = M5.Lcd.height();
 #endif
-#if !defined(ARDUINO_M5Stack_ATOM)
   int ps = (w < (h - TEXT_SPACE)) ? w / 5 : (h - TEXT_SPACE) / 5;  // Pixel size
-#endif
 
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #elif !defined(ARDUINO_M5Stack_ATOM)
   M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #else
-  M5.dis.drawpix(x, y, c);
+  leds[x + y * 5] = c;
+  FastLED.show();
 #endif
 };
 
@@ -203,16 +200,16 @@ void displayShowPixel() {
 };
 
 void fillScreen(int c) {
-#if !defined(ARDUINO_M5Stack_ATOM) && !defined(ARDUINO_WIO_TERMINAL)
-  M5.Lcd.fillScreen(c);
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillScreen(c);
 #elif defined(ARDUINO_M5Stack_ATOM)
   for (int x = 0; x < 5; x++) {
     for (int y = 0; y < 5; y++) {
       drawPixel(x, y, c);
     }
   }
-#else  // ARDUINO_WIO_TERMINAL
-  tft.fillScreen(c);
+#else
+  M5.Lcd.fillScreen(c);
 #endif
 };
 
@@ -283,7 +280,10 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         // TEXT     0x01
         log_i(">> text\n");
         log_i("%s\n", &(cmd_str[1]));
-#if !defined(ARDUINO_M5Stack_ATOM) && !defined(ARDUINO_WIO_TERMINAL)
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.fillRect(0, 0, 320, TEXT_SPACE - 1, BLACK);
+        tft.drawString(String(&(cmd_str[1])), 0, 0);
+#else
         M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
         M5.Lcd.setCursor(0, 0);
 #if defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
@@ -294,11 +294,6 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         M5.Lcd.setTextSize(3);
 #endif
         M5.Lcd.println(&(cmd_str[1]));
-#elif defined(ARDUINO_WIO_TERMINAL)
-        tft.fillRect(0, 0, 320, TEXT_SPACE - 1, BLACK);
-        tft.drawString(String(&(cmd_str[1])), 0, 0);
-#else
-        // Not implemented yet for ATOM Matrix
 #endif
       } else if (cmd_display == 0x02) {
         // PIXELS_0 0x02
@@ -325,16 +320,15 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       if (cmd_audio == 0x00) {
         // STOP_TONE  0x00
         log_i(">> Stop tone\n");
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-        M5.Speaker.mute();
-#elif defined(ARDUINO_M5Stick_C_PLUS)
-        M5.Beep.mute();
-#elif defined(ARDUINO_WIO_TERMINAL)
+
+#if defined(ARDUINO_WIO_TERMINAL)
         Beep.mute();
+#else
+        M5.Speaker.stop();
 #endif
       } else if (cmd_audio == 0x01) {
         // PLAY_TONE  0x01
-        const uint8_t max_volume = 5;
+        const uint8_t max_volume = 255;
         log_i(">> Play tone\n");
         uint32_t duration = (cmd_str[4] & 0xff) << 24
                             | (cmd_str[3] & 0xff) << 16
@@ -345,15 +339,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         log_i("Volume:%d\n", volume);
         log_i("Duration:%d\n", duration);
         log_i("Freq:%d\n", freq);
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-        M5.Speaker.setVolume(volume);
-        M5.Speaker.tone(freq);
-#elif defined(ARDUINO_M5Stick_C_PLUS)
-        M5.Beep.setVolume(volume);
-        M5.Beep.tone(freq);
-#elif defined(ARDUINO_WIO_TERMINAL)
+#if defined(ARDUINO_WIO_TERMINAL)
         Beep.setVolume(volume);
         Beep.tone(freq);
+#else
+        M5.Speaker.setVolume(volume);
+        M5.Speaker.tone(freq);
 #endif
       }
     } else if (cmd == 0x04) {
@@ -449,9 +440,9 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       //  otherwise, the LED is turned off.
       if (strcmp(label, "led") == 0) {
         if (strcmp(data, "on") == 0) {
-          digitalWrite(M5_LED, LOW);
+          digitalWrite(GPIO_NUM_10, LOW);
         } else {
-          digitalWrite(M5_LED, HIGH);
+          digitalWrite(GPIO_NUM_10, HIGH);
         }
       }
 #endif
@@ -463,15 +454,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 class StateCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     float temp = 0;
-#if !defined(ARDUINO_WIO_TERMINAL)
-    M5.IMU.getTempData(&temp);        // get temperature from IMU
-    state[4] = (random(256) & 0xff);  // Random sensor value for lightlevel
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
     state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);  // Random sensor value for soundlevel
 #else
     state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
 #endif
-#else
+#if defined(ARDUINO_WIO_TERMINAL)
     temp = lis.getTemperature();
     int light = (int)map(analogRead(WIO_LIGHT), 0, 511, 0, 255);
     log_i(">> Light Level " + String(light));
@@ -479,6 +467,9 @@ class StateCallbacks : public BLECharacteristicCallbacks {
     int mic = (int)map(analogRead(WIO_MIC), 0, 511, 0, 255);
     state[6] = (mic & 0xff);  // soundlevel
     log_i(">> sound Level " + String(mic));
+#else
+    // M5.Imu.getTemp(&temp); // get temperature from IMU
+    state[4] = (random(256) & 0xff);  // Random sensor value for lightlevel
 #endif
     state[5] = ((int)(temp + 128) & 0xff);  // temperature(+128)
     log_i("STATE read %s", (char *)state);
@@ -493,18 +484,17 @@ class StateCallbacks : public BLECharacteristicCallbacks {
 #endif
 float ax, ay, az;
 int16_t iax, iay, iaz;
-int16_t gx, gy, gz;
+float gx, gy, gz;
 float pitch, roll, yaw;
 
 void updateIMU() {
-#if !defined(ARDUINO_WIO_TERMINAL)
-  M5.IMU.getAccelData(&ax, &ay, &az);  // get accel
-  M5.IMU.getGyroAdc(&gx, &gy, &gz);    // get gyro
-  MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az, &pitch, &roll, &yaw);
-#else
+#if defined(ARDUINO_WIO_TERMINAL)
   lis.getAcceleration(&ay, &ax, &az);
   pitch = atan(-ax / sqrtf(ay * ay + az * az)) * RAD_TO_DEG;
   roll = atan(ay / az) * RAD_TO_DEG;
+#else
+  M5.Imu.getAccel(&ax, &ay, &az);     // get accel
+  M5.Imu.getGyro(&gx, &gy, &gz);      // get gyro
 #endif
   iax = (int16_t)(ax * ACC_MULT);
   iay = (int16_t)(ay * ACC_MULT);
@@ -564,22 +554,20 @@ class AnalogPinCallbacks : public BLECharacteristicCallbacks {
 void setup() {
   Serial.begin(115200);
 #if !defined(ARDUINO_WIO_TERMINAL)
-#if !defined(ARDUINO_M5Stack_ATOM)
-  M5.begin();
-#else
-  M5.begin(true, false, true);
-#endif
-#endif
-
-#if defined(ARDUINO_M5Stick_C_PLUS)
-  // Disable Pin25 to use Pin36.
-  gpio_pulldown_dis(GPIO_NUM_25);
-  gpio_pullup_dis(GPIO_NUM_25);
+  auto cfg = M5.config();
+  M5.begin(cfg);
+  M5.Display.init();
+  auto spk_cfg = M5.Speaker.config();
+  M5.Speaker.config(spk_cfg);
+  M5.Speaker.begin();  
 #endif
 
-#if !defined(ARDUINO_WIO_TERMINAL)
-  M5.IMU.Init();  // IMU for temperature, accel and gyro
-#else
+#if defined(ARDUINO_M5Stack_ATOM)
+  FastLED.addLeds<WS2811, LED_DATA_PIN>(leds, NUM_LEDS);
+  FastLED.setBrightness(20);
+#endif
+
+#if defined(ARDUINO_WIO_TERMINAL)
   // Display
   tft.begin();
   tft.setRotation(3);
@@ -614,8 +602,8 @@ void setup() {
   i2sInit();
   xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
   // LED
-  pinMode(M5_LED, OUTPUT);
-  digitalWrite(M5_LED, HIGH);
+  pinMode(GPIO_NUM_10, OUTPUT);
+  digitalWrite(GPIO_NUM_10, HIGH);
 #endif
 
   // Create MAC address base fixed ID
@@ -659,9 +647,6 @@ void setup() {
 
   log_i("BLE start.\n");
   log_i("%s\n", adv_str);
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-  M5.Speaker.mute();
-#endif
   BLEDevice::init(adv_str);
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
@@ -777,6 +762,9 @@ uint32_t old_label_time = 0;
 
 void loop() {
   if (deviceConnected) {
+#if !defined(ARDUINO_WIO_TERMINAL)
+    M5.update();
+#endif
     // Send notify data for button A, B and C(LOGO).
     uint8_t btnA = 0, btnB = 0, btnC = 0,
             btn_statusA = 0, btn_statusB = 0, btn_statusC = 0;
@@ -796,19 +784,12 @@ void loop() {
       btn_statusC = 1;
     }
 #else
-#if defined(ARDUINO_M5Stack_ATOM)
-    btnA = M5.Btn.wasPressed();
-    btn_statusA = M5.Btn.isPressed();
-#else
     btnA = M5.BtnA.wasPressed();
     btn_statusA = M5.BtnA.isPressed();
     btnB = M5.BtnB.wasPressed();
     btn_statusB = M5.BtnB.isPressed();
-#if defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
     btnC = M5.BtnC.wasPressed();
     btn_statusC = M5.BtnC.isPressed();
-#endif
-#endif
 #endif
 
 #define BUTTON_DELAY 50
@@ -848,9 +829,6 @@ void loop() {
     }
   }
 
-#if !defined(ARDUINO_WIO_TERMINAL)
-  M5.update();
-#endif
 #if defined(ARDUINO_WIO_TERMINAL)
   Beep.update();
 #endif
