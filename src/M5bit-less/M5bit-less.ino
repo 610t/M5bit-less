@@ -493,30 +493,76 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       // Do command
       if (label_str.compareTo("cmd") == 0) {
         if (data_str.compareTo("drawPixel") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawPixel(x_0, y_0, c);
+#else
           M5.Lcd.drawPixel(x_0, y_0, c);
+#endif
         } else if (data_str.compareTo("drawLine") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawLine(x_0, y_0, x_1, y_1, c);
+#else
           M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
+#endif
         } else if (data_str.compareTo("drawRect") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawRect(x_0, y_0, w, h, c);
+#else
           M5.Lcd.drawRect(x_0, y_0, w, h, c);
+#endif
         } else if (data_str.compareTo("drawTriangl") == 0) {  // "drawTriangle" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#else
           M5.Lcd.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#endif
         } else if (data_str.compareTo("drawRoundRe") == 0) {  // "drawRoundRect" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawRoundRect(x_0, y_0, w, h, r, c);
+#else
           M5.Lcd.drawRoundRect(x_0, y_0, w, h, r, c);
+#endif
         } else if (data_str.compareTo("fillScreen") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillScreen(c);
+#else
           M5.Lcd.fillScreen(c);
+#endif
         } else if (data_str.compareTo("fillRect") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillRect(x_0, y_0, w, h, c);
+#else
           M5.Lcd.fillRect(x_0, y_0, w, h, c);
+#endif
         } else if (data_str.compareTo("fillCircle") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillCircle(x_0, y_0, r, c);
+#else
           M5.Lcd.fillCircle(x_0, y_0, r, c);
+#endif
         } else if (data_str.compareTo("fillTriangl") == 0) {  // "fillTriangle" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#else
           M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#endif
         } else if (data_str.compareTo("fillRoundRe") == 0) {  // "fillRoundRect" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillRoundRect(x_0, y_0, w, h, r, c);
+#else
           M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
+#endif
         } else if (data_str.compareTo("print") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.setTextColor(tc);
+          tft.setTextSize(size);
+          tft.drawString(str, x_c, y_c);
+#else
           M5.Lcd.setCursor(x_c, y_c);
           M5.Lcd.setTextColor(tc);
           M5.Lcd.setTextSize(size);
           M5.Lcd.print(str);
+#endif
         }
       }
     }
