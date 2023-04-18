@@ -78,8 +78,34 @@ The following items have not been implemented because there are no sensors compa
 - Mic input (Inplemantable at M5StickC/Plus and Core2)
 
 ## Movies/Other materials
-### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
+#### M5bitLess label & data extension for [M5Stack Japan Creativity Contest 2022](https://protopedia.net/event/m5stack2022)
+- [Description in Japanese](https://protopedia.net/prototype/3224)
+
+[![M5bitLess label & data extension movie](https://gyazo.com/878db35177a5c89e2c7c3f08fcb09fc6.png)](https://youtu.be/1stCapqBokw)
+
+#### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
 - [Description in Japanese](https://protopedia.net/prototype/2395)
+
+[![M5bit Less: M5Stack x Scratch3 = So Fun!! movie](https://img.youtube.com/vi/-Nfu87CjvBU/0.jpg)](https://youtu.be/-Nfu87CjvBU)
+
+### [Maker Faire Kyoto 2021](https://makezine.jp/event/mfk2021/)
+#### M5bit Less: M5StackでScratchを使おう!!;「教育」カテゴリ応募作品
+[![M5bit Less: M5StackでScratchを使おう!!](https://img.youtube.com/vi/sNwNkEHScCE/0.jpg)](https://www.youtube.com/watch?v=sNwNkEHScCE)
+
+#### 京都観光案内 with M5bit Less - あかんターレで決めターレ; 「京都」カテゴリ応募作品
+[![京都観光案内 with M5bit Less - あかんターレで決めターレ](https://img.youtube.com/vi/7ue7GZlBH6Y/0.jpg)](https://www.youtube.com/watch?v=7ue7GZlBH6Y)
+
+
+
+## 動画/発表資料
+### M5Stack Japan Creativity Contest
+#### M5bitLess label & data extension for [M5Stack Japan Creativity Contest 2022](https://protopedia.net/event/m5stack2022)
+- [発表資料](https://protopedia.net/prototype/3224)
+
+[![M5bitLess label & data extension動画](https://gyazo.com/878db35177a5c89e2c7c3f08fcb09fc6.png)](https://youtu.be/1stCapqBokw)
+
+#### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
+- [発表資料](https://protopedia.net/prototype/2395)
 
 [![M5bit Less: M5Stack x Scratch3 = So Fun!!動画](https://img.youtube.com/vi/-Nfu87CjvBU/0.jpg)](https://youtu.be/-Nfu87CjvBU)
 
