@@ -2,6 +2,8 @@
 #include <M5Unified.h>
 #endif
 
+#include <Wire.h>
+
 #if defined(ARDUINO_M5Stack_ATOM)
 #include <FastLED.h>
 #define NUM_LEDS 25
@@ -947,7 +949,7 @@ void loop() {
 #if defined(ARDUINO_M5Stack_Core_ESP32)
       // keyboard input for M5Stack Faces
       if (digitalRead(5) == LOW) {
-        Wire.requestFrom(FACES_KEYBOARD_I2C_ADDR, 1);
+        Wire.requestFrom(0x08, 1);  // 0x08 means FACES_KEYBOARD_I2C_ADDR.
         while (Wire.available()) {
           char c = Wire.read();             // receive a byte as character
           Serial.printf("Key:%c\n", c);     // print the character
