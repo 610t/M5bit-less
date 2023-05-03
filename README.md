@@ -134,6 +134,13 @@ label & data拡張は、ScratchとM5Stackの間で、文字列labelで、値がd
 [![M5StackとScratchのより良い関係:覚醒編動画2](https://img.youtube.com/vi/FYaJ7QR_N-g/0.jpg)](https://youtu.be/FYaJ7QR_N-g)
 
 ### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
+### M5Stack Japan Creativity Contest
+#### M5bitLess label & data extension for [M5Stack Japan Creativity Contest 2022](https://protopedia.net/event/m5stack2022)
+- [発表資料](https://protopedia.net/prototype/3224)
+
+[![M5bitLess label & data extension動画](https://gyazo.com/878db35177a5c89e2c7c3f08fcb09fc6.png)](https://youtu.be/1stCapqBokw)
+
+#### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
 - [発表資料](https://protopedia.net/prototype/2395)
 
 [![M5bit Less: M5Stack x Scratch3 = So Fun!!動画](https://img.youtube.com/vi/-Nfu87CjvBU/0.jpg)](https://youtu.be/-Nfu87CjvBU)
