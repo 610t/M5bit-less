@@ -2,6 +2,8 @@
 #include <M5Unified.h>
 #endif
 
+#include <Wire.h>
+
 #if defined(ARDUINO_M5Stack_ATOM)
 #include <FastLED.h>
 #define NUM_LEDS 25
@@ -208,7 +210,7 @@ void fillScreen(int c) {
       drawPixel(x, y, c);
     }
   }
-#else
+#else  // ARDUINO_WIO_TERMINAL
   M5.Lcd.fillScreen(c);
 #endif
 };
@@ -242,6 +244,22 @@ class DummyCallbacks : public BLECharacteristicCallbacks {
 };
 
 // for cmd
+// Global variable for drawing graphics using data & label.
+uint32_t label_flag = 0;
+uint32_t x_0, y_0, x_1, y_1, x_2, y_2 = 0;  // (x,y) axis
+uint32_t x_c, y_c = 0;                      // position of cursor for text
+String str = "";                            // String for text output
+uint32_t size = 1;                          // text size
+uint32_t tc = 0;                            // text color
+uint32_t w, h = 0;                          // width & height
+uint32_t r = 0;                             // radius for circle
+uint32_t c = 0;                             // color
+
+void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data_val) {
+  if (label_str.compareTo(var_name) == 0) {
+    *var = data_val;
+  }
+}
 
 class CmdCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
@@ -293,6 +311,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 #else  // M5Stick C Plus
         M5.Lcd.setTextSize(3);
 #endif
+        M5.Lcd.setTextColor(WHITE);
         M5.Lcd.println(&(cmd_str[1]));
 #endif
       } else if (cmd_display == 0x02) {
@@ -391,6 +410,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         log_i("Data is Unknown:%02x.\n", cmd_data);
       }
 
+      if (label_flag != 0) {
 #if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #if defined(ARDUINO_M5Stick_C)
@@ -398,41 +418,44 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 #elif defined(ARDUINO_M5Stick_C_PLUS)
 #define LABEL_LOCATION 170
 #endif
-      M5.Lcd.setTextSize(1);
-      M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
-      M5.Lcd.setCursor(0, LABEL_LOCATION);
-      M5.Lcd.printf("Label:%s\n", label);
-      M5.Lcd.printf("Data:%s\n", data);
-      M5.Lcd.printf(" val:", data);
-      if (data_val < 100000) {
-        M5.Lcd.printf("%8.2f", data_val);
-      } else {
-        M5.Lcd.printf("too big");
-      }
+        M5.Lcd.setTextSize(1);
+        M5.Lcd.setTextColor(WHITE);
+        M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
+        M5.Lcd.setCursor(0, LABEL_LOCATION);
+        M5.Lcd.printf("Label:%s\n", label);
+        M5.Lcd.printf("Data:%s\n", data);
+        M5.Lcd.printf(" val:");
+        if (data_val < 100000) {
+          M5.Lcd.printf("%8.2f", data_val);
+        } else {
+          M5.Lcd.printf("too big");
+        }
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 #define LABEL_LOCATION_X 210
 #define LABEL_LOCATION_Y 40
 #define FONT_HEIGHT 20
-      M5.Lcd.setTextSize(2);
-      M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
-      M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
-      M5.Lcd.printf("Label:");
-      M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 1);
-      M5.Lcd.printf("%s", label);
-      M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 2);
-      M5.Lcd.printf("Data :");
-      M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
-      M5.Lcd.printf("%s", data);
-      M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 4);
-      M5.Lcd.printf(" val:");
-      M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 5);
-      if (data_val < 100000) {
-        M5.Lcd.printf("%8.2f", data_val);
-      } else {
-        M5.Lcd.printf("too big");
+        M5.Lcd.setTextSize(2);
+        M5.Lcd.setTextColor(WHITE);
+        M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
+        M5.Lcd.printf("Label:");
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 1);
+        M5.Lcd.printf("%s", label);
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 2);
+        M5.Lcd.printf("Data :");
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
+        M5.Lcd.printf("%s", data);
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 4);
+        M5.Lcd.printf(" val:");
+        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 5);
+        if (data_val < 100000) {
+          M5.Lcd.printf("%8.2f", data_val);
+        } else {
+          M5.Lcd.printf("too big");
+        }
+#endif
+#endif
       }
-#endif
-#endif
 
 #if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
       // Sample implementation label & data event handling for M5StickC and Plus.
@@ -446,6 +469,104 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         }
       }
 #endif
+
+      //// Draw LCD graphics using label & data.
+      // Display label & data?
+      getLabelDataValue("label", label_str, &label_flag, data_val);
+      // Store variables
+      getLabelDataValue("x0", label_str, &x_0, data_val);
+      getLabelDataValue("y0", label_str, &y_0, data_val);
+      getLabelDataValue("x1", label_str, &x_1, data_val);
+      getLabelDataValue("y1", label_str, &y_1, data_val);
+      getLabelDataValue("x2", label_str, &x_2, data_val);
+      getLabelDataValue("y2", label_str, &y_2, data_val);
+      getLabelDataValue("xc", label_str, &x_c, data_val);
+      getLabelDataValue("yc", label_str, &y_c, data_val);
+      if (label_str.compareTo("str") == 0) {
+        str = data_str;
+      }
+      getLabelDataValue("size", label_str, &size, data_val);
+      getLabelDataValue("tc", label_str, &tc, data_val);
+      getLabelDataValue("w", label_str, &w, data_val);
+      getLabelDataValue("h", label_str, &h, data_val);
+      getLabelDataValue("r", label_str, &r, data_val);
+      getLabelDataValue("c", label_str, &c, data_val);
+
+      // Do command
+      if (label_str.compareTo("cmd") == 0) {
+        if (data_str.compareTo("drawPixel") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawPixel(x_0, y_0, c);
+#else
+          M5.Lcd.drawPixel(x_0, y_0, c);
+#endif
+        } else if (data_str.compareTo("drawLine") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawLine(x_0, y_0, x_1, y_1, c);
+#else
+          M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
+#endif
+        } else if (data_str.compareTo("drawRect") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawRect(x_0, y_0, w, h, c);
+#else
+          M5.Lcd.drawRect(x_0, y_0, w, h, c);
+#endif
+        } else if (data_str.compareTo("drawTriangl") == 0) {  // "drawTriangle" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#else
+          M5.Lcd.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#endif
+        } else if (data_str.compareTo("drawRoundRe") == 0) {  // "drawRoundRect" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.drawRoundRect(x_0, y_0, w, h, r, c);
+#else
+          M5.Lcd.drawRoundRect(x_0, y_0, w, h, r, c);
+#endif
+        } else if (data_str.compareTo("fillScreen") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillScreen(c);
+#else
+          M5.Lcd.fillScreen(c);
+#endif
+        } else if (data_str.compareTo("fillRect") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillRect(x_0, y_0, w, h, c);
+#else
+          M5.Lcd.fillRect(x_0, y_0, w, h, c);
+#endif
+        } else if (data_str.compareTo("fillCircle") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillCircle(x_0, y_0, r, c);
+#else
+          M5.Lcd.fillCircle(x_0, y_0, r, c);
+#endif
+        } else if (data_str.compareTo("fillTriangl") == 0) {  // "fillTriangle" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#else
+          M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#endif
+        } else if (data_str.compareTo("fillRoundRe") == 0) {  // "fillRoundRect" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.fillRoundRect(x_0, y_0, w, h, r, c);
+#else
+          M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
+#endif
+        } else if (data_str.compareTo("print") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          tft.setTextColor(tc);
+          tft.setTextSize(size);
+          tft.drawString(str, x_c, y_c);
+#else
+          M5.Lcd.setCursor(x_c, y_c);
+          M5.Lcd.setTextColor(tc);
+          M5.Lcd.setTextSize(size);
+          M5.Lcd.print(str);
+#endif
+        }
+      }
     }
   }
 };
@@ -559,7 +680,7 @@ void setup() {
   M5.Display.init();
   auto spk_cfg = M5.Speaker.config();
   M5.Speaker.config(spk_cfg);
-  M5.Speaker.begin();  
+  M5.Speaker.begin();
 #endif
 
 #if defined(ARDUINO_M5Stack_ATOM)
@@ -825,6 +946,28 @@ void loop() {
       action[9] = 0;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
+#if defined(ARDUINO_M5Stack_Core_ESP32)
+      // keyboard input for M5Stack Faces
+      if (digitalRead(5) == LOW) {
+        Wire.requestFrom(0x08, 1);  // 0x08 means FACES_KEYBOARD_I2C_ADDR.
+        while (Wire.available()) {
+          char c = Wire.read();             // receive a byte as character
+          Serial.printf("Key:%c\n", c);     // print the character
+          memset((char *)(action), 0, 20);  // clear action buffer
+          action[19] = 0x14;                // DATA_TEXT
+          action[0] = 0x4b;                 // 'K'
+          action[1] = 0x65;                 // 'e'
+          action[2] = 0x79;                 // 'y'
+          action[3] = 0x00;
+          action[8] = c;  // Key character
+          action[9] = 0;
+          delay(50);  // Wait 50ms
+          pCharacteristic[4]->setValue(action, 20);
+          pCharacteristic[4]->notify();
+        }
+      }
+#endif
+
       old_label_time = label_time;
     }
   }

@@ -66,6 +66,53 @@ Microbit Moreの拡張機能を追加します。
 
 あとは、通常のMicrobit Moreのように利用することができますが、まだ実装していない機能があるので注意してください。
 
+# label & data拡張
+label & data拡張は、ScratchとM5Stackの間で、文字列labelで、値がdata(文字列か数値)の特別なデータを送受信できます。
+
+## ScratchからM5Stack方向の予約語
+今のところ、画面描画のためのコマンドが実装されています。
+
+### 予約されている変数
+|ラベル名|意味|値|
+|----|----|----|
+|label|ラベルとデータの表示|0:表示しない(デフォルト)、それ以外:表示する|
+|led|LEDのオンオフ|'on':オン, それ以外:オフ|
+|x0,y0,x1,y1,x2,y2|座標(x,y)|整数|
+|w,h|幅と高さ|整数|
+|r|半径|整数|
+|c|色(24bit)|整数|
+|xc,yc|文字列表示位置|整数|
+|str|表示する文字列|文字列|
+|size|文字サイズ|整数(1-7)|
+|tc|文字色(16bit)|整数|
+|cmd|描画コマンド|文字列(下表参照)|
+
+#### 予約されているコマンド
+以下のような画面描画のためのコマンドが利用可能です。
+|cmdのデータ|意味|実際のコマンド|
+|----|----|----|
+|drawPixel|点を描画|M5.Lcd.drawPixel(x0, y0, c)|
+|drawLine|線を描画|M5.Lcd.drawLine(x0, y0, x1, y1, c)|
+|drawRect|四角を描画|M5.Lcd.drawRect(x0, y0, w, h, c)|
+|drawTriangl|三角を描画|M5.Lcd.drawTriangle(x0, y0, x1, y1, x2, y2, c)|
+|drawRoundRe|角丸四角を描画|M5.Lcd.drawRoundRect(x0, y0, w, h, r, c)|
+|fillScreen|全画面を単色で塗る|M5.Lcd.fillScreen(c)|
+|fillRect|塗った四角を描画|M5.Lcd.fillRect(x0, y0, w, h, c)|
+|fillCircle|塗った円を描画|M5.Lcd.fillCircle(x0, y0, r, c)|
+|fillTriangl|塗った三角を描画|M5.Lcd.fillTriangle(x0, y0, x1, y1, x2, y2, c)|
+|fillRoundRe|塗った角丸四角を描画|M5.Lcd.fillRoundRect(x0, y0, w, h, r, c)|
+|print|文字列を描画|M5.Lcd.setCursor(xc, yc);M5.Lcd.setTextColor(tc);M5.Lcd.setTextSize(size);M5.Lcd.print(str)|
+
+## M5StackからScratch方向の予約語
+今のところ、以下のようなキーボード入力が利用可能です。
+
+### 予約されている変数
+以下のような変数が予約されています。
+|ラベル|意味|実際の値|
+|----|----|----|
+|Key|Grayのキーボードで入力された文字コード|'a', 'b', 'A', ...|
+|a|ランダムな'a'-'z'の文字を返す|'a', 'b', 'c', ...|
+
 # TODO
 ## 実装可能だか未実装の項目
 以下の項目は実装可能ですが、まだ実装していないものです。
@@ -79,6 +126,13 @@ Microbit Moreの拡張機能を追加します。
 
 
 ## 動画/発表資料
+### M5StackとScratchのより良い関係:覚醒編; for  [IoT縛りの勉強会! IoTLT vol.85](https://iotlt.connpass.com/event/239891/)
+- [発表資料](https://scrapbox.io/M5S/M5Stack%E3%81%A8Scratch%E3%81%AE%E3%82%88%E3%82%8A%E8%89%AF%E3%81%84%E9%96%A2%E4%BF%82:%E8%A6%9A%E9%86%92%E7%B7%A8)
+
+[![M5StackとScratchのより良い関係:覚醒編動画1](https://img.youtube.com/vi/Vk8FoH25KJg/0.jpg)](https://youtu.be/Vk8FoH25KJg)
+
+[![M5StackとScratchのより良い関係:覚醒編動画2](https://img.youtube.com/vi/FYaJ7QR_N-g/0.jpg)](https://youtu.be/FYaJ7QR_N-g)
+
 ### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
 - [発表資料](https://protopedia.net/prototype/2395)
 

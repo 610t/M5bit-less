@@ -66,6 +66,55 @@ Select a device to connect.
 
 You can use like a Microbit More for micro:bit.
 
+# label & data extension
+M5bitLess label & data extension can send and receive special data between Scratch and M5Stack.
+
+## Reserved words from Scratch to M5Stack
+
+For now, commands for screen drawing are implemented.
+
+### Reserved variables
+|label|meanings|value|
+|----|----|----|
+|label|show label & data|0:not show(default)、other:show|
+|led|on/off of LED|'on':on, other:off|
+|x0,y0,x1,y1,x2,y2|location(x,y)|int|
+|w,h|width & height|int|
+|r|radius|int|
+|c|color(24bit)|int|
+|xc,yc|location of string|int|
+|str|string to show|string|
+|size|size of character|int(1-7)|
+|tc|color of string(16bit)|int|
+|cmd|draw command (show below)|string|
+
+#### Reserved commands.
+The following commands for screen drawing are available.
+
+|value of cmd|meanings|command|
+|----|----|----|
+|drawPixel|draw point|M5.Lcd.drawPixel(x0, y0, c)|
+|drawLine|draw line|M5.Lcd.drawLine(x0, y0, x1, y1, c)|
+|drawRect|draw rectangle|M5.Lcd.drawRect(x0, y0, w, h, c)|
+|drawTriangl|draw triangle|M5.Lcd.drawTriangle(x0, y0, x1, y1, x2, y2, c)|
+|drawRoundRe|draw corner rounded rectangle|M5.Lcd.drawRoundRect(x0, y0, w, h, r, c)|
+|fillScreen|fill full screen with a color|M5.Lcd.fillScreen(c)|
+|fillRect|draw filled rectangle|M5.Lcd.fillRect(x0, y0, w, h, c)|
+|fillCircle|draw filled circle|M5.Lcd.fillCircle(x0, y0, r, c)|
+|fillTriangl|draw filled triangle|M5.Lcd.fillTriangle(x0, y0, x1, y1, x2, y2, c)|
+|fillRoundRe|draw filled corner rounded rectangle|M5.Lcd.fillRoundRect(x0, y0, w, h, r, c)|
+|print|draw string|M5.Lcd.setCursor(xc, yc);M5.Lcd.setTextColor(tc);M5.Lcd.setTextSize(size);M5.Lcd.print(str)|
+
+## Reserved words from M5Stack to Scratch
+For now, the following keyboard inputs are available.
+
+### Reserved variables
+These value is reserved.
+|label|meanings|value|
+|----|----|----|
+|Key|character code with Faces keyboard|'a', 'b', 'A', ...|
+|a|Random string 'a'-'z'|'a', 'b', 'c', ...|
+
 # TODO
 ## Implementable but not implement yet
 The following items can be implemented, but have not yet been implemented.
@@ -78,6 +127,13 @@ The following items have not been implemented because there are no sensors compa
 - Mic input (Inplemantable at M5StickC/Plus and Core2)
 
 ## Movies/Other materials
+### M5StackとScratchのより良い関係:覚醒編; for  [IoT縛りの勉強会! IoTLT vol.85](https://iotlt.connpass.com/event/239891/)
+- [Description in Japanese](https://scrapbox.io/M5S/M5Stack%E3%81%A8Scratch%E3%81%AE%E3%82%88%E3%82%8A%E8%89%AF%E3%81%84%E9%96%A2%E4%BF%82:%E8%A6%9A%E9%86%92%E7%B7%A8)
+
+[![M5StackとScratchのより良い関係:覚醒編動画1](https://img.youtube.com/vi/Vk8FoH25KJg/0.jpg)](https://youtu.be/Vk8FoH25KJg)
+
+[![M5StackとScratchのより良い関係:覚醒編動画2](https://img.youtube.com/vi/FYaJ7QR_N-g/0.jpg)](https://youtu.be/FYaJ7QR_N-g)
+
 ### M5bit Less: M5Stack x Scratch3 = So Fun!!; for [M5Stack Japan Creativity Contest 2021](https://protopedia.net/event/22)
 - [Description in Japanese](https://protopedia.net/prototype/2395)
 
