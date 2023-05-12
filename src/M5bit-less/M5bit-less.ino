@@ -2,21 +2,25 @@
 #include <M5Unified.h>
 #endif
 
+m5::board_t myBoard = m5gfx::board_unknown;
+
 #include <Wire.h>
 
-#if defined(ARDUINO_M5Stack_ATOM)
 #include <FastLED.h>
 #define NUM_LEDS 25
 #define LED_DATA_PIN 27
 CRGB leds[NUM_LEDS];
 
 // Colours
+#if defined(ARDUINO_M5Stack_ATOM)
 #define WHITE CRGB::White
 #define BLACK CRGB::Black
 #define RED CRGB::Red
 #define GREEN CRGB::Green
 #define BLUE CRGB::Blue
-#elif defined(ARDUINO_WIO_TERMINAL)
+#endif
+
+#if defined(ARDUINO_WIO_TERMINAL)
 #include "WioTerminal_utils.h"
 // Display
 #include "TFT_eSPI.h"
@@ -54,7 +58,6 @@ SPEAKER Beep;
 #endif
 
 // Mic for M5StickC/Plus
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
 #include <driver/i2s.h>
 
 #define PIN_CLK 0
@@ -102,7 +105,6 @@ void mic_record_task(void *arg) {
     vTaskDelay(100 / portTICK_RATE_MS);
   }
 }
-#endif
 
 #define MBIT_MORE_SERVICE "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
 #define MBIT_MORE_CH_COMMAND "0b500100-607f-4151-9091-7d008d6ffc5c"       // R&W(20byte)
@@ -304,13 +306,13 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 #else
         M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
         M5.Lcd.setCursor(0, 0);
-#if defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
-        M5.Lcd.setTextSize(4);
-#elif defined(ARDUINO_M5Stick_C)
-        M5.Lcd.setTextSize(2);
-#else  // M5Stick C Plus
-        M5.Lcd.setTextSize(3);
-#endif
+        if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
+          M5.Lcd.setTextSize(4);
+        } else if (myBoard == m5gfx::board_M5StickC) {
+          M5.Lcd.setTextSize(2);
+        } else if (myBoard == m5gfx::board_M5StickCPlus) {
+          M5.Lcd.setTextSize(3);
+        }
         M5.Lcd.setTextColor(WHITE);
         M5.Lcd.println(&(cmd_str[1]));
 #endif
@@ -411,64 +413,66 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       }
 
       if (label_flag != 0) {
+        int label_location;
 #if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
-#if defined(ARDUINO_M5Stick_C)
-#define LABEL_LOCATION 110
-#elif defined(ARDUINO_M5Stick_C_PLUS)
-#define LABEL_LOCATION 170
-#endif
-        M5.Lcd.setTextSize(1);
-        M5.Lcd.setTextColor(WHITE);
-        M5.Lcd.fillRect(0, LABEL_LOCATION, M5.Lcd.width(), M5.Lcd.height() - LABEL_LOCATION, BLACK);
-        M5.Lcd.setCursor(0, LABEL_LOCATION);
-        M5.Lcd.printf("Label:%s\n", label);
-        M5.Lcd.printf("Data:%s\n", data);
-        M5.Lcd.printf(" val:");
-        if (data_val < 100000) {
-          M5.Lcd.printf("%8.2f", data_val);
-        } else {
-          M5.Lcd.printf("too big");
+        if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+          if (myBoard == m5gfx::board_M5StickC) {
+            label_location = 110;
+          } else if (myBoard == m5gfx::board_M5StickCPlus) {
+            label_location = 170;
+          }
+
+          M5.Lcd.setTextSize(1);
+          M5.Lcd.setTextColor(WHITE);
+          M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, BLACK);
+          M5.Lcd.setCursor(0, label_location);
+          M5.Lcd.printf("Label:%s\n", label);
+          M5.Lcd.printf("Data:%s\n", data);
+          M5.Lcd.printf(" val:");
+          if (data_val < 100000) {
+            M5.Lcd.printf("%8.2f", data_val);
+          } else {
+            M5.Lcd.printf("too big");
+          }
+        } else if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
+          int label_location_x = 210;
+          int label_location_y = 40;
+          int font_height = 20;
+          M5.Lcd.setTextSize(2);
+          M5.Lcd.setTextColor(WHITE);
+          M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), BLACK);
+          M5.Lcd.setCursor(label_location_x, label_location_y);
+          M5.Lcd.printf("Label:");
+          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
+          M5.Lcd.printf("%s", label);
+          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 2);
+          M5.Lcd.printf("Data :");
+          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 3);
+          M5.Lcd.printf("%s", data);
+          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 4);
+          M5.Lcd.printf(" val:");
+          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 5);
+          if (data_val < 100000) {
+            M5.Lcd.printf("%8.2f", data_val);
+          } else {
+            M5.Lcd.printf("too big");
+          }
         }
-#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
-#define LABEL_LOCATION_X 210
-#define LABEL_LOCATION_Y 40
-#define FONT_HEIGHT 20
-        M5.Lcd.setTextSize(2);
-        M5.Lcd.setTextColor(WHITE);
-        M5.Lcd.fillRect(LABEL_LOCATION_X, LABEL_LOCATION_Y, M5.Lcd.width() - LABEL_LOCATION_X, M5.Lcd.height(), BLACK);
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y);
-        M5.Lcd.printf("Label:");
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 1);
-        M5.Lcd.printf("%s", label);
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 2);
-        M5.Lcd.printf("Data :");
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 3);
-        M5.Lcd.printf("%s", data);
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 4);
-        M5.Lcd.printf(" val:");
-        M5.Lcd.setCursor(LABEL_LOCATION_X, LABEL_LOCATION_Y + FONT_HEIGHT * 5);
-        if (data_val < 100000) {
-          M5.Lcd.printf("%8.2f", data_val);
-        } else {
-          M5.Lcd.printf("too big");
-        }
-#endif
 #endif
       }
 
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
-      // Sample implementation label & data event handling for M5StickC and Plus.
-      // If the label "led" is data "on", the LED is turned on;
-      //  otherwise, the LED is turned off.
-      if (strcmp(label, "led") == 0) {
-        if (strcmp(data, "on") == 0) {
-          digitalWrite(GPIO_NUM_10, LOW);
-        } else {
-          digitalWrite(GPIO_NUM_10, HIGH);
+      if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+        // Sample implementation label & data event handling for M5StickC and Plus.
+        // If the label "led" is data "on", the LED is turned on;
+        //  otherwise, the LED is turned off.
+        if (strcmp(label, "led") == 0) {
+          if (strcmp(data, "on") == 0) {
+            digitalWrite(GPIO_NUM_10, LOW);
+          } else {
+            digitalWrite(GPIO_NUM_10, HIGH);
+          }
         }
       }
-#endif
 
       //// Draw LCD graphics using label & data.
       // Display label & data?
@@ -575,11 +579,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 class StateCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     float temp = 0;
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
-    state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);  // Random sensor value for soundlevel
-#else
-    state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
-#endif
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+      state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);
+    } else {
+      state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
+    }
+
 #if defined(ARDUINO_WIO_TERMINAL)
     temp = lis.getTemperature();
     int light = (int)map(analogRead(WIO_LIGHT), 0, 511, 0, 255);
@@ -681,6 +686,7 @@ void setup() {
   auto spk_cfg = M5.Speaker.config();
   M5.Speaker.config(spk_cfg);
   M5.Speaker.begin();
+  myBoard = M5.getBoard();
 #endif
 
 #if defined(ARDUINO_M5Stack_ATOM)
@@ -718,14 +724,14 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 #endif
 
-#if defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_C_PLUS)
-  // for Mic input
-  i2sInit();
-  xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
-  // LED
-  pinMode(GPIO_NUM_10, OUTPUT);
-  digitalWrite(GPIO_NUM_10, HIGH);
-#endif
+  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+    // for Mic input
+    i2sInit();
+    xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
+    // LED
+    pinMode(GPIO_NUM_10, OUTPUT);
+    digitalWrite(GPIO_NUM_10, HIGH);
+  }
 
   // Create MAC address base fixed ID
   uint8_t mac0[6] = { 0 };
@@ -756,11 +762,7 @@ void setup() {
   tft.println(adv_str);
 #else
 #if !defined(ARDUINO_M5Stack_ATOM)
-#if defined(ARDUINO_M5Stick_C)
-  M5.Lcd.setTextSize(1);
-#else
   M5.Lcd.setTextSize(2);
-#endif
   M5.Lcd.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
   M5.Lcd.println(adv_str);
 #endif
@@ -946,27 +948,27 @@ void loop() {
       action[9] = 0;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
-#if defined(ARDUINO_M5Stack_Core_ESP32)
-      // keyboard input for M5Stack Faces
-      if (digitalRead(5) == LOW) {
-        Wire.requestFrom(0x08, 1);  // 0x08 means FACES_KEYBOARD_I2C_ADDR.
-        while (Wire.available()) {
-          char c = Wire.read();             // receive a byte as character
-          Serial.printf("Key:%c\n", c);     // print the character
-          memset((char *)(action), 0, 20);  // clear action buffer
-          action[19] = 0x14;                // DATA_TEXT
-          action[0] = 0x4b;                 // 'K'
-          action[1] = 0x65;                 // 'e'
-          action[2] = 0x79;                 // 'y'
-          action[3] = 0x00;
-          action[8] = c;  // Key character
-          action[9] = 0;
-          delay(50);  // Wait 50ms
-          pCharacteristic[4]->setValue(action, 20);
-          pCharacteristic[4]->notify();
+      if (myBoard == m5gfx::board_M5Stack) {
+        // keyboard input for M5Stack Faces
+        if (digitalRead(5) == LOW) {
+          Wire.requestFrom(0x08, 1);  // 0x08 means FACES_KEYBOARD_I2C_ADDR.
+          while (Wire.available()) {
+            char c = Wire.read();             // receive a byte as character
+            Serial.printf("Key:%c\n", c);     // print the character
+            memset((char *)(action), 0, 20);  // clear action buffer
+            action[19] = 0x14;                // DATA_TEXT
+            action[0] = 0x4b;                 // 'K'
+            action[1] = 0x65;                 // 'e'
+            action[2] = 0x79;                 // 'y'
+            action[3] = 0x00;
+            action[8] = c;  // Key character
+            action[9] = 0;
+            delay(50);  // Wait 50ms
+            pCharacteristic[4]->setValue(action, 20);
+            pCharacteristic[4]->notify();
+          }
         }
       }
-#endif
 
       old_label_time = label_time;
     }
@@ -975,4 +977,4 @@ void loop() {
 #if defined(ARDUINO_WIO_TERMINAL)
   Beep.update();
 #endif
-}
+};
