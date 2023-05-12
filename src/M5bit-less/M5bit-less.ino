@@ -11,26 +11,12 @@ m5::board_t myBoard = m5gfx::board_unknown;
 #define LED_DATA_PIN 27
 CRGB leds[NUM_LEDS];
 
-// Colours
-#if defined(ARDUINO_M5Stack_ATOM)
-#define WHITE CRGB::White
-#define BLACK CRGB::Black
-#define RED CRGB::Red
-#define GREEN CRGB::Green
-#define BLUE CRGB::Blue
-#endif
-
 #if defined(ARDUINO_WIO_TERMINAL)
 #include "WioTerminal_utils.h"
 // Display
 #include "TFT_eSPI.h"
 TFT_eSPI tft;
-// Colours
-#define WHITE TFT_WHITE
-#define BLACK TFT_BLACK
-#define RED TFT_RED
-#define GREEN TFT_GREEN
-#define BLUE TFT_BLUE
+
 // For IMU
 #include "LIS3DHTR.h"
 #include <SPI.h>
@@ -184,8 +170,16 @@ void drawPixel(int x, int y, int c) {
   tft.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #else
   M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
-  leds[x + y * 5] = c;
-  FastLED.show();
+  if (myBoard == m5gfx::board_M5Atom) {
+    if (c == TFT_BLACK) {
+      leds[x + y * 5] = CRGB::Black;
+    } else if (c == TFT_RED) {
+      leds[x + y * 5] = CRGB::Red;
+    } else if (c == TFT_BLUE) {
+      leds[x + y * 5] = CRGB::Blue;
+    }
+    FastLED.show();
+  }
 #endif
 };
 
@@ -194,9 +188,9 @@ void displayShowPixel() {
     for (int x = 0; x < 5; x++) {
       log_i("%1d", pixel[y][x] & 0b1);
       if (pixel[y][x] & 0b1) {
-        drawPixel(x, y, RED);
+        drawPixel(x, y, TFT_RED);
       } else {
-        drawPixel(x, y, BLACK);
+        drawPixel(x, y, TFT_BLACK);
       }
     }
   }
@@ -221,7 +215,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) {
     log_i("connect\n");
     deviceConnected = true;
-    fillScreen(WHITE);
+    fillScreen(TFT_WHITE);
   };
 
   void onDisconnect(BLEServer *pServer) {
@@ -295,16 +289,16 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       if (cmd_display == 0x00) {
         // CLEAR    0x00
         log_i(">> clear\n");
-        fillScreen(BLACK);
+        fillScreen(TFT_BLACK);
       } else if (cmd_display == 0x01) {
         // TEXT     0x01
         log_i(">> text\n");
         log_i("%s\n", &(cmd_str[1]));
 #if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillRect(0, 0, 320, TEXT_SPACE - 1, BLACK);
+        tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
         tft.drawString(String(&(cmd_str[1])), 0, 0);
 #else
-        M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, BLACK);
+        M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
         M5.Lcd.setCursor(0, 0);
         if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
           M5.Lcd.setTextSize(4);
@@ -313,7 +307,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         } else if (myBoard == m5gfx::board_M5StickCPlus) {
           M5.Lcd.setTextSize(3);
         }
-        M5.Lcd.setTextColor(WHITE);
+        M5.Lcd.setTextColor(TFT_WHITE);
         M5.Lcd.println(&(cmd_str[1]));
 #endif
       } else if (cmd_display == 0x02) {
@@ -423,8 +417,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           }
 
           M5.Lcd.setTextSize(1);
-          M5.Lcd.setTextColor(WHITE);
-          M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, BLACK);
+          M5.Lcd.setTextColor(TFT_WHITE);
+          M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, TFT_BLACK);
           M5.Lcd.setCursor(0, label_location);
           M5.Lcd.printf("Label:%s\n", label);
           M5.Lcd.printf("Data:%s\n", data);
@@ -439,8 +433,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           int label_location_y = 40;
           int font_height = 20;
           M5.Lcd.setTextSize(2);
-          M5.Lcd.setTextColor(WHITE);
-          M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), BLACK);
+          M5.Lcd.setTextColor(TFT_WHITE);
+          M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), TFT_BLACK);
           M5.Lcd.setCursor(label_location_x, label_location_y);
           M5.Lcd.printf("Label:");
           M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
@@ -690,7 +684,7 @@ void setup() {
 #endif
 
   if (myBoard == m5gfx::board_M5Atom) {
-    FastLED.addLeds<WS2811, LED_DATA_PIN>(leds, NUM_LEDS);
+    FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
     FastLED.setBrightness(20);
   }
 
@@ -754,7 +748,7 @@ void setup() {
   String("BBC micro:bit [" + ID + "]").toCharArray(adv_str, sizeof(adv_str));
 
   // Start up screen
-  fillScreen(BLUE);
+  fillScreen(TFT_BLUE);
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.setTextSize(2);
   tft.setCursor(0, 0);
