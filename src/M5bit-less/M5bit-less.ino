@@ -1,8 +1,7 @@
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
-#endif
-
 m5::board_t myBoard = m5gfx::board_unknown;
+#endif
 
 #include <Wire.h>
 
@@ -44,6 +43,7 @@ SPEAKER Beep;
 #endif
 
 // Mic for M5StickC/Plus
+#if !defined(ARDUINO_WIO_TERMINAL)
 #include <driver/i2s.h>
 
 #define PIN_CLK 0
@@ -91,6 +91,7 @@ void mic_record_task(void *arg) {
     vTaskDelay(100 / portTICK_RATE_MS);
   }
 }
+#endif
 
 #define MBIT_MORE_SERVICE "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
 #define MBIT_MORE_CH_COMMAND "0b500100-607f-4151-9091-7d008d6ffc5c"       // R&W(20byte)
@@ -452,9 +453,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
             M5.Lcd.printf("too big");
           }
         }
-#endif
       }
-
       if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
         // Sample implementation label & data event handling for M5StickC and Plus.
         // If the label "led" is data "on", the LED is turned on;
@@ -466,7 +465,10 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
             digitalWrite(GPIO_NUM_10, HIGH);
           }
         }
+
+#endif
       }
+
 
       //// Draw LCD graphics using label & data.
       // Display label & data?
@@ -573,11 +575,6 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 class StateCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     float temp = 0;
-    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-      state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);
-    } else {
-      state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
-    }
 
 #if defined(ARDUINO_WIO_TERMINAL)
     temp = lis.getTemperature();
@@ -588,6 +585,12 @@ class StateCallbacks : public BLECharacteristicCallbacks {
     state[6] = (mic & 0xff);  // soundlevel
     log_i(">> sound Level " + String(mic));
 #else
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+      state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);
+    } else {
+      state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
+    }
+
     // M5.Imu.getTemp(&temp); // get temperature from IMU
     state[4] = (random(256) & 0xff);  // Random sensor value for lightlevel
 #endif
@@ -681,14 +684,21 @@ void setup() {
   M5.Speaker.config(spk_cfg);
   M5.Speaker.begin();
   myBoard = M5.getBoard();
-#endif
 
   if (myBoard == m5gfx::board_M5Atom) {
     FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
     FastLED.setBrightness(20);
   }
 
-#if defined(ARDUINO_WIO_TERMINAL)
+  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+    // for Mic input
+    i2sInit();
+    xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
+    // LED
+    pinMode(GPIO_NUM_10, OUTPUT);
+    digitalWrite(GPIO_NUM_10, HIGH);
+  }
+#else
   // Display
   tft.begin();
   tft.setRotation(3);
@@ -717,15 +727,6 @@ void setup() {
   // LED
   pinMode(LED_BUILTIN, OUTPUT);
 #endif
-
-  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-    // for Mic input
-    i2sInit();
-    xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
-    // LED
-    pinMode(GPIO_NUM_10, OUTPUT);
-    digitalWrite(GPIO_NUM_10, HIGH);
-  }
 
   // Create MAC address base fixed ID
   uint8_t mac0[6] = { 0 };
@@ -940,6 +941,7 @@ void loop() {
       action[9] = 0;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
+#if !defined(ARDUINO_WIO_TERMINAL)
       if (myBoard == m5gfx::board_M5Stack) {
         // keyboard input for M5Stack Faces
         if (digitalRead(5) == LOW) {
@@ -961,6 +963,7 @@ void loop() {
           }
         }
       }
+#endif
 
       old_label_time = label_time;
     }
