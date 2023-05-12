@@ -182,9 +182,8 @@ void drawPixel(int x, int y, int c) {
 
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
-#elif !defined(ARDUINO_M5Stack_ATOM)
-  M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #else
+  M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
   leds[x + y * 5] = c;
   FastLED.show();
 #endif
@@ -206,13 +205,14 @@ void displayShowPixel() {
 void fillScreen(int c) {
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.fillScreen(c);
-#elif defined(ARDUINO_M5Stack_ATOM)
-  for (int x = 0; x < 5; x++) {
-    for (int y = 0; y < 5; y++) {
-      drawPixel(x, y, c);
+#else
+  if (myBoard == m5gfx::board_M5Atom) {
+    for (int x = 0; x < 5; x++) {
+      for (int y = 0; y < 5; y++) {
+        drawPixel(x, y, c);
+      }
     }
   }
-#else  // ARDUINO_WIO_TERMINAL
   M5.Lcd.fillScreen(c);
 #endif
 };
@@ -414,7 +414,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 
       if (label_flag != 0) {
         int label_location;
-#if !defined(ARDUINO_WIO_TERMINAL) && !defined(ARDUINO_M5Stack_ATOM)
+#if !defined(ARDUINO_WIO_TERMINAL)
         if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
           if (myBoard == m5gfx::board_M5StickC) {
             label_location = 110;
@@ -689,10 +689,10 @@ void setup() {
   myBoard = M5.getBoard();
 #endif
 
-#if defined(ARDUINO_M5Stack_ATOM)
-  FastLED.addLeds<WS2811, LED_DATA_PIN>(leds, NUM_LEDS);
-  FastLED.setBrightness(20);
-#endif
+  if (myBoard == m5gfx::board_M5Atom) {
+    FastLED.addLeds<WS2811, LED_DATA_PIN>(leds, NUM_LEDS);
+    FastLED.setBrightness(20);
+  }
 
 #if defined(ARDUINO_WIO_TERMINAL)
   // Display
@@ -761,11 +761,9 @@ void setup() {
   tft.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
   tft.println(adv_str);
 #else
-#if !defined(ARDUINO_M5Stack_ATOM)
   M5.Lcd.setTextSize(2);
   M5.Lcd.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
   M5.Lcd.println(adv_str);
-#endif
 #endif
 
   log_i("BLE start.\n");
