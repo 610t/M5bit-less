@@ -455,17 +455,10 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         }
       }
       if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-        // Sample implementation label & data event handling for M5StickC and Plus.
-        // If the label "led" is data "on", the LED is turned on;
-        //  otherwise, the LED is turned off.
+        // Change the LED brightness level to an integer value labeled "led".
         if (strcmp(label, "led") == 0) {
-          if (strcmp(data, "on") == 0) {
-            digitalWrite(GPIO_NUM_10, LOW);
-          } else {
-            digitalWrite(GPIO_NUM_10, HIGH);
-          }
+          M5.Power.setLed(constrain(data_val, 0, 255));
         }
-
 #endif
       }
 
