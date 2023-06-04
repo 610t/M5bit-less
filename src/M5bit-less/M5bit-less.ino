@@ -38,7 +38,7 @@ SPEAKER Beep;
 #if !defined(ARDUINO_WIO_TERMINAL)
 //// GPIO
 // for PortB
-#define PIN0_INPUT GPIO_NUM_36  // analog input
+#define PIN0_INPUT GPIO_NUM_33  // analog input
 #define PIN1_INPUT GPIO_NUM_26
 #endif
 
