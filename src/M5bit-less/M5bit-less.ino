@@ -578,6 +578,17 @@ class StateCallbacks : public BLECharacteristicCallbacks {
     state[6] = (mic & 0xff);  // soundlevel
     log_i(">> sound Level " + String(mic));
 #else
+    // GPIO input from PIN0 & PIN1.
+    int r0 = analogRead(PIN0_INPUT);
+    int r1 = analogRead(PIN1_INPUT);
+    state[0] = 0;
+    if (r0 >= 2048) {
+      state[0] |= 0b01;
+    }
+    if (r1 >= 2048) {
+      state[0] |= 0b10;
+    }
+
     if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
       state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);
     } else {
