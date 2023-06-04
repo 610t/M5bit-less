@@ -39,7 +39,7 @@ SPEAKER Beep;
 //// GPIO
 // for PortB
 #define PIN0_INPUT GPIO_NUM_33  // analog input
-#define PIN1_INPUT GPIO_NUM_26
+#define PIN1_INPUT GPIO_NUM_32
 #endif
 
 // Mic for M5StickC/Plus
@@ -651,7 +651,7 @@ class ActionCallbacks : public BLECharacteristicCallbacks {
 };
 
 // for Analog pin
-class AnalogPinCallbacks : public BLECharacteristicCallbacks {
+class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
 #if !defined(ARDUINO_WIO_TERMINAL)
     int r = map(analogRead(PIN0_INPUT), 0, 4095, 0, 1023);
@@ -659,6 +659,22 @@ class AnalogPinCallbacks : public BLECharacteristicCallbacks {
     int r = analogRead(0);
 #endif
     log_i("Analog Pin0 Read:%d\n", r);
+
+    analog[0] = (r & 0xff);
+    analog[1] = ((r >> 8) & 0xff);
+
+    pCharacteristic->setValue(analog, 2);
+  }
+};
+
+class AnalogPinCallback1 : public BLECharacteristicCallbacks {
+  void onRead(BLECharacteristic *pCharacteristic) {
+#if !defined(ARDUINO_WIO_TERMINAL)
+    int r = map(analogRead(PIN1_INPUT), 0, 4095, 0, 1023);
+#else
+    int r = analogRead(0);
+#endif
+    log_i("Analog Pin1 Read:%d\n", r);
 
     analog[0] = (r & 0xff);
     analog[1] = ((r >> 8) & 0xff);
@@ -799,13 +815,13 @@ void setup() {
   pCharacteristic[5] = pService->createCharacteristic(
     MBIT_MORE_CH_ANALOG_IN_P0,
     BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[5]->setCallbacks(new AnalogPinCallbacks());
+  pCharacteristic[5]->setCallbacks(new AnalogPinCallback0());
   pCharacteristic[5]->addDescriptor(new BLE2902());
 
   pCharacteristic[6] = pService->createCharacteristic(
     MBIT_MORE_CH_ANALOG_IN_P1,
     BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[6]->setCallbacks(new AnalogPinCallbacks());
+  pCharacteristic[6]->setCallbacks(new AnalogPinCallback1());
   pCharacteristic[6]->addDescriptor(new BLE2902());
 
   pCharacteristic[7] = pService->createCharacteristic(
