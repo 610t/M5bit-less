@@ -1,6 +1,10 @@
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
 m5::board_t myBoard = m5gfx::board_unknown;
+
+// PortB A/D, GPIO input
+int pin0_input;
+int pin1_input;
 #endif
 
 #include <Wire.h>
@@ -34,13 +38,6 @@ SPEAKER Beep;
 #endif
 #include <BLEServer.h>
 #include <BLE2902.h>
-
-#if !defined(ARDUINO_WIO_TERMINAL)
-//// GPIO
-// for PortB
-#define PIN0_INPUT GPIO_NUM_33  // analog input
-#define PIN1_INPUT GPIO_NUM_32
-#endif
 
 // Mic for M5StickC/Plus
 #if !defined(ARDUINO_WIO_TERMINAL)
@@ -579,8 +576,8 @@ class StateCallbacks : public BLECharacteristicCallbacks {
     log_i(">> sound Level " + String(mic));
 #else
     // GPIO input from PIN0 & PIN1.
-    int r0 = analogRead(PIN0_INPUT);
-    int r1 = analogRead(PIN1_INPUT);
+    int r0 = analogRead(pin0_input);
+    int r1 = analogRead(pin1_input);
     state[0] = 0;
     if (r0 >= 2048) {
       state[0] |= 0b01;
@@ -665,7 +662,7 @@ class ActionCallbacks : public BLECharacteristicCallbacks {
 class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
 #if !defined(ARDUINO_WIO_TERMINAL)
-    int r = map(analogRead(PIN0_INPUT), 0, 4095, 0, 1023);
+    int r = map(analogRead(pin0_input), 0, 4095, 0, 1023);
 #else
     int r = analogRead(0);
 #endif
@@ -681,7 +678,7 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
 class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
 #if !defined(ARDUINO_WIO_TERMINAL)
-    int r = map(analogRead(PIN1_INPUT), 0, 4095, 0, 1023);
+    int r = map(analogRead(pin1_input), 0, 4095, 0, 1023);
 #else
     int r = analogRead(0);
 #endif
@@ -704,6 +701,36 @@ void setup() {
   M5.Speaker.config(spk_cfg);
   M5.Speaker.begin();
   myBoard = M5.getBoard();
+
+  //// GPIO
+  // for PortB (ADC, GPIO input)
+  // Default is for M5StickC/Plus, CoreInk
+  pin0_input = GPIO_NUM_33;
+  pin1_input = GPIO_NUM_32;
+
+  switch (myBoard) {
+    case m5gfx::board_M5Atom:
+    case m5gfx::board_M5AtomU:
+    case m5gfx::board_M5AtomPsram:
+      pin0_input = GPIO_NUM_32;
+      pin1_input = GPIO_NUM_26;
+      break;
+
+    case m5gfx::board_M5Stack:
+    case m5gfx::board_M5StackCore2:
+    case m5gfx::board_M5Tough:
+      pin0_input = GPIO_NUM_36;
+      pin1_input = GPIO_NUM_26;
+      break;
+
+    case m5gfx::board_M5Paper:
+      pin0_input = GPIO_NUM_33;
+      pin1_input = GPIO_NUM_26;
+      break;
+
+    default:
+      break;
+  }
 
   if (myBoard == m5gfx::board_M5Atom) {
     FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
