@@ -731,6 +731,8 @@ void setup() {
     default:
       break;
   }
+  pinMode(pin0_input, OUTPUT);
+  pinMode(pin1_input, OUTPUT);
 
   if (myBoard == m5gfx::board_M5Atom) {
     FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
