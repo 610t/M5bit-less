@@ -8,6 +8,7 @@ Arduino IDEで作成しています。
 
 ## サポートしている機種
 以下の機種で動くことを確認していますが、全てで同じ機能がサポートされているわけではありません。
+[M5Unified](https://github.com/m5stack/M5Unified)を使っているため、ほとんどのM5Stackファミリーで利用可能なはずです。
 詳しくは、サポートしている機能の表を参照してください。
 - M5Stack Basic
 - M5Stack Gray
@@ -15,6 +16,7 @@ Arduino IDEで作成しています。
 - M5StickC
 - M5StickC Plus
 - ATOM Matrix
+- CardPuter
 - Wio Terminal
 
 ## サポートしている機能
@@ -38,6 +40,7 @@ Arduino IDEで作成しています。
 |M5StickC|o|o|o|o|x|o(マイク付きモデル)|A,B|x|o||
 |M5StickC Plus|o|o|o|o|o|o|A,B|x|o||
 |ATOM Matrix|o|o|o|△|x|x|A|x|o|電波が弱い|
+|CardPuter|x|x|o|o|o|o|A|x|x||
 |Wio Terminal|o|o|o|o|o|o|A,B,C(LOGO)|o|o| |
 - △:対応可能だがまだ実装できていないもの。
 - -:まだ動作確認できてないもの
