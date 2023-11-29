@@ -255,6 +255,55 @@ void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data
   }
 }
 
+// Stackchan Draw command
+void clear_eyes() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(0, 0, 320, 120, TFT_BLACK);
+#else
+  M5.Lcd.fillRect(0, 0, 320, 120, TFT_BLACK);
+#endif
+}
+
+void clear_mouth() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(0, 120, 320, 120, TFT_BLACK);
+#else
+  M5.Lcd.fillRect(0, 120, 320, 120, TFT_BLACK);
+#endif
+}
+void draw_eye() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  clear_eyes();
+  tft.fillCircle(90, 93, 8, TFT_WHITE);
+  tft.fillCircle(230, 96, 8, TFT_WHITE);
+#else
+  clear_eyes();
+  M5.Lcd.fillCircle(90, 93, 8, TFT_WHITE);
+  M5.Lcd.fillCircle(230, 96, 8, TFT_WHITE);
+#endif
+}
+
+void draw_mouth() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  clear_mouth();
+  tft.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
+#else
+  clear_mouth();
+  M5.Lcd.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
+#endif
+}
+
+void draw_openmouth() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  clear_mouth();
+  tft.fillRect(140, 130, 40, 40, TFT_WHITE);
+#else
+  clear_mouth();
+  M5.Lcd.fillRect(140, 130, 40, 40, TFT_WHITE);
+#endif
+}
+
+// Microbit More Command handling
 class CmdCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     log_i("CMD read\n");
@@ -554,6 +603,41 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           M5.Lcd.setTextColor(tc);
           M5.Lcd.setTextSize(size);
           M5.Lcd.print(str);
+#endif
+        }
+      }
+
+      // Do StackChan command
+      if (label_str.compareTo("stack") == 0) {
+        if (data_str.compareTo("eye") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          draw_eye();
+#else
+          draw_eye();
+#endif
+        } else if (data_str.compareTo("mouth") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          draw_mouth();
+#else
+          draw_mouth();
+#endif
+        } else if (data_str.compareTo("openmouth") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          draw_openmouth();
+#else
+          draw_openmouth();
+#endif
+        } else if (data_str.compareTo("say") == 0) {
+#if defined(ARDUINO_WIO_TERMINAL)
+          draw_openmouth();
+          delay(10);
+          draw_mouth();
+          delay(10);
+#else
+          draw_openmouth();
+          delay(10);
+          draw_mouth();
+          delay(10);
 #endif
         }
       }
