@@ -256,50 +256,58 @@ void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data
 }
 
 // Stackchan Draw command
+int norm_x(int x) {
+  return (int(x / 320.0 * M5.Lcd.width()));
+}
+
+int norm_y(int y) {
+  return (int(y / 240.0 * M5.Lcd.height()));
+}
+
 void clear_eyes() {
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(0, 0, 320, 120, TFT_BLACK);
+  tft.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
 #else
-  M5.Lcd.fillRect(0, 0, 320, 120, TFT_BLACK);
+  M5.Lcd.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
 #endif
 }
 
 void clear_mouth() {
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(0, 120, 320, 120, TFT_BLACK);
+  tft.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
 #else
-  M5.Lcd.fillRect(0, 120, 320, 120, TFT_BLACK);
+  M5.Lcd.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
 #endif
 }
 void draw_eye() {
 #if defined(ARDUINO_WIO_TERMINAL)
   clear_eyes();
-  tft.fillCircle(90, 93, 8, TFT_WHITE);
-  tft.fillCircle(230, 96, 8, TFT_WHITE);
+  tft.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
+  tft.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
 #else
   clear_eyes();
-  M5.Lcd.fillCircle(90, 93, 8, TFT_WHITE);
-  M5.Lcd.fillCircle(230, 96, 8, TFT_WHITE);
+  M5.Lcd.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
+  M5.Lcd.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
 #endif
 }
 
 void draw_mouth() {
 #if defined(ARDUINO_WIO_TERMINAL)
   clear_mouth();
-  tft.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
+  tft.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
 #else
   clear_mouth();
-  M5.Lcd.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
+  M5.Lcd.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
 #endif
 }
 
 void draw_openmouth() {
 #if defined(ARDUINO_WIO_TERMINAL)
   clear_mouth();
-  tft.fillRect(140, 130, 40, 40, TFT_WHITE);
+  tft.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
 #else
   clear_mouth();
-  M5.Lcd.fillRect(140, 130, 40, 40, TFT_WHITE);
+  M5.Lcd.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
 #endif
 }
 
