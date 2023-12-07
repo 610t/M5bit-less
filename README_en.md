@@ -8,6 +8,7 @@ It is written by the Arduino IDE.
 
 ## Supported devices
 I check devices work below, but not all of them support same Microbit More functions.
+I use [M5Unified](https://github.com/m5stack/M5Unified), so almost all M5Stack family can use.
 Please check a supported funciton table.
 - M5Stack Basic
 - M5Stack Gray
@@ -15,6 +16,7 @@ Please check a supported funciton table.
 - M5StickC
 - M5StickC Plus
 - ATOM Matrix
+- Cardputer
 - Wio Terminal
 
 ## Supported functions at Microbit More
@@ -38,6 +40,7 @@ Please check a supported funciton table.
 |M5StickC|o|o|o|o|x|o(With mic model)|A,B|x|o||
 |M5StickC Plus|o|o|o|o|o|o|A,B|x|o||
 |ATOM Matrix|o|o|o|△|x|x|A|x|o|Too weak BLE|
+|CardPuter|x|x|o|o|o|o|A|x|x||
 |Wio Terminal|o|o|o|o|o|o|A,B,C(LOGO)|o|o| |
 - △:Implementable
 - -:Not check yet
