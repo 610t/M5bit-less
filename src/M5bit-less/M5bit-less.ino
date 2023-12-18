@@ -256,6 +256,7 @@ void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data
 }
 
 // Stackchan Draw command
+#if !defined(ARDUINO_WIO_TERMINAL)
 int norm_x(int x) {
   return (int(x / 320.0 * M5.Lcd.width()));
 }
@@ -263,10 +264,11 @@ int norm_x(int x) {
 int norm_y(int y) {
   return (int(y / 240.0 * M5.Lcd.height()));
 }
+#endif
 
 void clear_eyes() {
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
+  tft.fillRect(0, 0, 320, 120, TFT_BLACK);
 #else
   M5.Lcd.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
 #endif
@@ -274,7 +276,7 @@ void clear_eyes() {
 
 void clear_mouth() {
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
+  tft.fillRect(0, 120, 320, 120, TFT_BLACK);
 #else
   M5.Lcd.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
 #endif
@@ -283,10 +285,9 @@ void clear_mouth() {
 void draw_eye() {
   clear_eyes();
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
-  tft.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
+  tft.fillCircle(90, 93, 8, TFT_WHITE);
+  tft.fillCircle(230, 96, 8, TFT_WHITE);
 #else
-
   M5.Lcd.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
   M5.Lcd.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
 #endif
@@ -295,8 +296,8 @@ void draw_eye() {
 void draw_closeeye() {
   clear_eyes();
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
-  tft.fillRect(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
+  tft.fillRect(82, 93, 16, 4, TFT_WHITE);
+  tft.fillRect(222, 93, 16, 4, TFT_WHITE);
 #else
   M5.Lcd.fillRect(norm_x(82), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
   M5.Lcd.fillRect(norm_x(222), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
@@ -306,7 +307,7 @@ void draw_closeeye() {
 void draw_mouth() {
   clear_mouth();
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
+  tft.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
 #else
   M5.Lcd.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
 #endif
@@ -315,7 +316,7 @@ void draw_mouth() {
 void draw_openmouth() {
   clear_mouth();
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
+  tft.fillRect(140, 130, 40, 40, TFT_WHITE);
 #else
   M5.Lcd.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
 #endif
