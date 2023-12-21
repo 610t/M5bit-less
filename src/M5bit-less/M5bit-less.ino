@@ -213,7 +213,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) {
     log_i("connect\n");
     deviceConnected = true;
-    fillScreen(TFT_WHITE);
+    fillScreen(TFT_BLACK);
   };
 
   void onDisconnect(BLEServer *pServer) {
@@ -364,7 +364,11 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
         tft.drawString(String(&(cmd_str[1])), 0, 0);
 #else
+        // Draw fukidashi
         M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
+        M5.Lcd.fillEllipse(0, 0, M5.Lcd.width(), TEXT_SPACE, TFT_WHITE);
+        // M5.Lcd.fillEllipse(M5.Lcd.width() / 2, TEXT_SPACE / 2, M5.Lcd.width() / 2, TEXT_SPACE / 2, TFT_WHITE); // Show entire oval.
+        M5.Lcd.fillTriangle(M5.Lcd.width() / 2 - M5.Lcd.width() * 0.1, TEXT_SPACE * 0.8, M5.Lcd.width() / 2, TEXT_SPACE * 1.5, M5.Lcd.width() / 2 + M5.Lcd.width() * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
         M5.Lcd.setCursor(0, 0);
         if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
           M5.Lcd.setTextSize(4);
@@ -373,7 +377,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         } else if (myBoard == m5gfx::board_M5StickCPlus) {
           M5.Lcd.setTextSize(3);
         }
-        M5.Lcd.setTextColor(TFT_WHITE);
+        M5.Lcd.setTextColor(TFT_BLACK);
         M5.Lcd.println(&(cmd_str[1]));
 #endif
       } else if (cmd_display == 0x02) {
