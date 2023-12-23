@@ -735,8 +735,10 @@ void setup() {
     default:
       break;
   }
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
   pinMode(pin0_input, OUTPUT);
   pinMode(pin1_input, OUTPUT);
+#endif
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
   if (myBoard == m5gfx::board_M5Atom) {
