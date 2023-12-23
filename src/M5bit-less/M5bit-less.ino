@@ -9,10 +9,12 @@ int pin1_input;
 
 #include <Wire.h>
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <FastLED.h>
 #define NUM_LEDS 25
 #define LED_DATA_PIN 27
 CRGB leds[NUM_LEDS];
+#endif
 
 #if defined(ARDUINO_WIO_TERMINAL)
 #include "WioTerminal_utils.h"
@@ -167,6 +169,7 @@ void drawPixel(int x, int y, int c) {
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #else
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
   M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
   if (myBoard == m5gfx::board_M5Atom) {
     if (c == TFT_BLACK) {
@@ -178,6 +181,7 @@ void drawPixel(int x, int y, int c) {
     }
     FastLED.show();
   }
+#endif
 #endif
 };
 
@@ -821,11 +825,17 @@ void setup() {
     default:
       break;
   }
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+  pinMode(pin0_input, OUTPUT);
+  pinMode(pin1_input, OUTPUT);
+#endif
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
   if (myBoard == m5gfx::board_M5Atom) {
     FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
     FastLED.setBrightness(20);
   }
+#endif
 
   if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
     // for Mic input
