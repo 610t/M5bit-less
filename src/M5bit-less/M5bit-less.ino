@@ -169,8 +169,8 @@ void drawPixel(int x, int y, int c) {
 #if defined(ARDUINO_WIO_TERMINAL)
   tft.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #else
-#if !defined(CONFIG_IDF_TARGET_ESP32S3)
   M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
   if (myBoard == m5gfx::board_M5Atom) {
     if (c == TFT_BLACK) {
       leds[x + y * 5] = CRGB::Black;
