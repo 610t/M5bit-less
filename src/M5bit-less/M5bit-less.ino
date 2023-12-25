@@ -366,6 +366,9 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         log_i("%s\n", &(cmd_str[1]));
 #if defined(ARDUINO_WIO_TERMINAL)
         tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
+        tft.fillEllipse(0, 0, 320, TEXT_SPACE, TFT_WHITE);
+        tft.fillTriangle(320 / 2 - 320 * 0.1, TEXT_SPACE * 0.8, 320 / 2, TEXT_SPACE * 1.5, 320 / 2 + 320 * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+        tft.setTextColor(TFT_BLACK);
         tft.drawString(String(&(cmd_str[1])), 0, 0);
 #else
         // Draw fukidashi
