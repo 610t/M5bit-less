@@ -9,6 +9,9 @@ int pin1_input;
 
 #include <Wire.h>
 
+// For Stack-chan
+bool stackchan_mode = false;
+
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <FastLED.h>
 #define NUM_LEDS 25
@@ -217,7 +220,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) {
     log_i("connect\n");
     deviceConnected = true;
-    fillScreen(TFT_WHITE);
+    fillScreen(TFT_BLACK);
   };
 
   void onDisconnect(BLEServer *pServer) {
@@ -259,6 +262,74 @@ void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data
   }
 }
 
+// Stackchan Draw command
+#if !defined(ARDUINO_WIO_TERMINAL)
+int norm_x(int x) {
+  return (int(x / 320.0 * M5.Lcd.width()));
+}
+
+int norm_y(int y) {
+  return (int(y / 240.0 * M5.Lcd.height()));
+}
+#endif
+
+void clear_eyes() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(0, 0, 320, 120, TFT_BLACK);
+#else
+  M5.Lcd.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
+#endif
+}
+
+void clear_mouth() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(0, 120, 320, 120, TFT_BLACK);
+#else
+  M5.Lcd.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
+#endif
+}
+
+void draw_eye() {
+  clear_eyes();
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillCircle(90, 93, 8, TFT_WHITE);
+  tft.fillCircle(230, 96, 8, TFT_WHITE);
+#else
+  M5.Lcd.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
+  M5.Lcd.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
+#endif
+}
+
+void draw_closeeye() {
+  clear_eyes();
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(82, 93, 16, 4, TFT_WHITE);
+  tft.fillRect(222, 93, 16, 4, TFT_WHITE);
+#else
+  M5.Lcd.fillRect(norm_x(82), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
+  M5.Lcd.fillRect(norm_x(222), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
+#endif
+}
+
+void draw_mouth() {
+  clear_mouth();
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
+#else
+  M5.Lcd.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
+#endif
+}
+
+void draw_openmouth() {
+  clear_mouth();
+#if defined(ARDUINO_WIO_TERMINAL)
+  tft.fillRect(140, 130, 40, 40, TFT_WHITE);
+#else
+  M5.Lcd.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
+#endif
+}
+
+// Microbit More Command handling
 class CmdCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     log_i("CMD read\n");
@@ -298,9 +369,29 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         log_i("%s\n", &(cmd_str[1]));
 #if defined(ARDUINO_WIO_TERMINAL)
         tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
+        if (stackchan_mode) {
+          // Draw fukidashi
+          tft.fillEllipse(0, 0, 320, TEXT_SPACE, TFT_WHITE);
+          tft.fillTriangle(320 / 2 - 320 * 0.1, TEXT_SPACE * 0.8,
+                           320 / 2, TEXT_SPACE * 1.5,
+                           320 / 2 + 320 * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+          tft.setTextColor(TFT_BLACK);
+        } else {
+          tft.setTextColor(TFT_WHITE);
+        }
         tft.drawString(String(&(cmd_str[1])), 0, 0);
 #else
         M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
+        if (stackchan_mode) {
+          // Draw fukidashi
+          M5.Lcd.fillEllipse(0, 0, M5.Lcd.width(), TEXT_SPACE, TFT_WHITE);
+          M5.Lcd.fillTriangle(M5.Lcd.width() / 2 - M5.Lcd.width() * 0.1, TEXT_SPACE * 0.8,
+                              M5.Lcd.width() / 2, TEXT_SPACE * 1.5,
+                              M5.Lcd.width() / 2 + M5.Lcd.width() * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+          M5.Lcd.setTextColor(TFT_BLACK);
+        } else {
+          M5.Lcd.setTextColor(TFT_WHITE);
+        }
         M5.Lcd.setCursor(0, 0);
         if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
           M5.Lcd.setTextSize(4);
@@ -309,7 +400,6 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         } else if (myBoard == m5gfx::board_M5StickCPlus) {
           M5.Lcd.setTextSize(3);
         }
-        M5.Lcd.setTextColor(TFT_WHITE);
         M5.Lcd.println(&(cmd_str[1]));
 #endif
       } else if (cmd_display == 0x02) {
@@ -559,6 +649,29 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           M5.Lcd.setTextSize(size);
           M5.Lcd.print(str);
 #endif
+        }
+      }
+
+      // Do StackChan command
+      if (label_str.compareTo("stack") == 0) {
+
+        if (data_str.compareTo("eye") == 0) {
+          draw_eye();
+        } else if (data_str.compareTo("closeeye") == 0) {
+          draw_closeeye();
+        } else if (data_str.compareTo("mouth") == 0) {
+          draw_mouth();
+        } else if (data_str.compareTo("openmouth") == 0) {
+          draw_openmouth();
+        } else if (data_str.compareTo("say") == 0) {
+          draw_openmouth();
+          delay(10);
+          draw_mouth();
+          delay(10);
+        } else if (data_str.compareTo("on") == 0) {
+          stackchan_mode = true;
+        } else if (data_str.compareTo("off") == 0) {
+          stackchan_mode = false;
         }
       }
     }
