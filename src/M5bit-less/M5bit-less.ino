@@ -709,7 +709,7 @@ class StateCallbacks : public BLECharacteristicCallbacks {
       state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
     }
 
-    // M5.Imu.getTemp(&temp); // get temperature from IMU
+    M5.Imu.getTemp(&temp);            // get temperature from IMU
     state[4] = (random(256) & 0xff);  // Random sensor value for lightlevel
 #endif
     state[5] = ((int)(temp + 128) & 0xff);  // temperature(+128)
