@@ -926,6 +926,18 @@ void setup_pins() {
       pin1 = GPIO_NUM_26;
       break;
 
+    case m5gfx::board_M5StackCoreS3:  // for portB
+      pin0 = GPIO_NUM_8;
+      pin1 = GPIO_NUM_9;
+      break;
+
+    case m5gfx::board_M5AtomS3:
+    case m5gfx::board_M5Cardputer:
+    case m5gfx::board_M5Dial:  // for portB
+      pin0 = GPIO_NUM_1;
+      pin1 = GPIO_NUM_2;
+      break;
+
     default:
       break;
   }
