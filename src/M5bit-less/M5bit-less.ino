@@ -708,6 +708,14 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           case 0x01:
             // OUTPUT
             log_i("CMD_PIN OUTPUT\n");
+            log_i(" pin:%d, dat:%d\n", cmd_str[1], cmd_str[2]);
+            if (cmd_str[1] == 0) {
+              pinMode(pin0_input, OUTPUT);
+              digitalWrite(pin0_input, cmd_str[2]);
+            } else if (cmd_str[1] == 1) {
+              pinMode(pin1_input, OUTPUT);
+              digitalWrite(pin1_input, cmd_str[2]);
+            }
             break;
           case 0x02:
             // PWM
@@ -921,10 +929,6 @@ void setup_pins() {
     default:
       break;
   }
-#if !defined(CONFIG_IDF_TARGET_ESP32S3)
-  pinMode(pin0_input, OUTPUT);
-  pinMode(pin1_input, OUTPUT);
-#endif
 #endif
 }
 
