@@ -3,8 +3,8 @@
 m5::board_t myBoard = m5gfx::board_unknown;
 
 // PortB A/D, GPIO input
-int pin0_input;
-int pin1_input;
+int pin0;
+int pin1;
 #endif
 
 #include <Wire.h>
@@ -710,11 +710,11 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
             log_i("CMD_PIN OUTPUT\n");
             log_i(" pin:%d, dat:%d\n", cmd_str[1], cmd_str[2]);
             if (cmd_str[1] == 0) {
-              pinMode(pin0_input, OUTPUT);
-              digitalWrite(pin0_input, cmd_str[2]);
+              pinMode(pin0, OUTPUT);
+              digitalWrite(pin0, cmd_str[2]);
             } else if (cmd_str[1] == 1) {
-              pinMode(pin1_input, OUTPUT);
-              digitalWrite(pin1_input, cmd_str[2]);
+              pinMode(pin1, OUTPUT);
+              digitalWrite(pin1, cmd_str[2]);
             }
             break;
           case 0x02:
@@ -754,8 +754,8 @@ class StateCallbacks : public BLECharacteristicCallbacks {
     log_i(">> sound Level " + String(mic));
 #else
     // GPIO input from PIN0 & PIN1.
-    int r0 = analogRead(pin0_input);
-    int r1 = analogRead(pin1_input);
+    int r0 = analogRead(pin0);
+    int r1 = analogRead(pin1);
     state[0] = 0;
     if (r0 >= 2048) {
       state[0] |= 0b01;
@@ -840,7 +840,7 @@ class ActionCallbacks : public BLECharacteristicCallbacks {
 class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
 #if !defined(ARDUINO_WIO_TERMINAL)
-    int r = map(analogRead(pin0_input), 0, 4095, 0, 1023);
+    int r = map(analogRead(pin0), 0, 4095, 0, 1023);
 #else
     int r = analogRead(0);
 #endif
@@ -856,7 +856,7 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
 class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
 #if !defined(ARDUINO_WIO_TERMINAL)
-    int r = map(analogRead(pin1_input), 0, 4095, 0, 1023);
+    int r = map(analogRead(pin1), 0, 4095, 0, 1023);
 #else
     int r = analogRead(0);
 #endif
@@ -903,27 +903,27 @@ void setup_pins() {
   //// GPIO
   // for PortB (ADC, GPIO input)
   // Default is for M5StickC/Plus, CoreInk
-  pin0_input = GPIO_NUM_33;
-  pin1_input = GPIO_NUM_32;
+  pin0 = GPIO_NUM_33;
+  pin1 = GPIO_NUM_32;
 
   switch (myBoard) {
     case m5gfx::board_M5Atom:
     case m5gfx::board_M5AtomU:
     case m5gfx::board_M5AtomPsram:
-      pin0_input = GPIO_NUM_32;
-      pin1_input = GPIO_NUM_26;
+      pin0 = GPIO_NUM_32;
+      pin1 = GPIO_NUM_26;
       break;
 
     case m5gfx::board_M5Stack:
     case m5gfx::board_M5StackCore2:
     case m5gfx::board_M5Tough:
-      pin0_input = GPIO_NUM_36;
-      pin1_input = GPIO_NUM_26;
+      pin0 = GPIO_NUM_36;
+      pin1 = GPIO_NUM_26;
       break;
 
     case m5gfx::board_M5Paper:
-      pin0_input = GPIO_NUM_33;
-      pin1_input = GPIO_NUM_26;
+      pin0 = GPIO_NUM_33;
+      pin1 = GPIO_NUM_26;
       break;
 
     default:
