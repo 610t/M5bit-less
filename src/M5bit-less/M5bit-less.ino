@@ -336,7 +336,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     pCharacteristic->setValue(cmd, 20);
   }
 
-  void cmd_display(char cmd_display, const char *cmd_str) {
+  void cmd_display(const char *cmd_str) {
+    char cmd_display = cmd_str[0] & 0b11111;
     switch (cmd_display) {
       case 0x00:
         // CLEAR    0x00
@@ -405,7 +406,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     }
   }
 
-  void cmd_audio(char cmd_audio, const char *cmd_str) {
+  void cmd_audio(const char *cmd_str) {
+    char cmd_audio = cmd_str[0] & 0b11111;
     switch (cmd_audio) {
       case 0x00:
         // STOP_TONE  0x00
@@ -687,12 +689,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x02:
         //// CMD_DISPLAY
         log_i("CMD display\n");
-        cmd_display(cmd_str[0] & 0b11111, cmd_str);
+        cmd_display(cmd_str);
         break;
       case 0x03:
         //// CMD_AUDIO
         log_i("CMD audio\n");
-        cmd_audio(cmd_str[0] & 0b11111, cmd_str);
+        cmd_audio(cmd_str);
         break;
       case 0x04:
         //// CMD_DATA (only v2)
