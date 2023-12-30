@@ -687,9 +687,6 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     log_i("%s\n", cmd_str);
     char cmd = (cmd_str[0] >> 5);
     switch (cmd) {
-      case 0x01:
-        // CMD_PIN: not implemented
-        break;
       case 0x02:
         //// CMD_DISPLAY
         log_i("CMD display\n");
@@ -703,6 +700,32 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x04:
         //// CMD_DATA (only v2)
         cmd_data(cmd_str);
+        break;
+      case 0x01:
+        // CMD_PIN: just a place holder.
+        char pin_cmd = (cmd_str[0] & 0x0f);
+        switch (pin_cmd) {
+          case 0x01:
+            // OUTPUT
+            log_i("CMD_PIN OUTPUT\n");
+            break;
+          case 0x02:
+            // PWM
+            log_i("CMD_PIN PWM\n");
+            break;
+          case 0x03:
+            // SERVO
+            log_i("CMD_PIN SERVO\n");
+            break;
+          case 0x04:
+            // PULL
+            log_i("CMD_PIN PULL\n");
+            break;
+          case 0x05:
+            // EVENT
+            log_i("CMD_PIN EVENT\n");
+            break;
+        }
         break;
     }
   }
