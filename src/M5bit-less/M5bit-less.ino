@@ -808,17 +808,37 @@ class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   }
 };
 
-void setup() {
-  Serial.begin(115200);
-#if !defined(ARDUINO_WIO_TERMINAL)
+void setup_M5Stack() {
+#if !defined(ARDUINO_WIO_TERMINAL)  // M5Stack
+  // Init M5Stack.
   auto cfg = M5.config();
   M5.begin(cfg);
   M5.Display.init();
+
+  // Init speaker.
   auto spk_cfg = M5.Speaker.config();
   M5.Speaker.config(spk_cfg);
   M5.Speaker.begin();
   myBoard = M5.getBoard();
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+  // Init FastLED(NeoPixel).
+  if (myBoard == m5gfx::board_M5Atom) {
+    FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
+    FastLED.setBrightness(20);
+  }
+#endif
+
+  // for Mic input
+  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+    i2sInit();
+    xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
+  }
+#endif
+}
+
+void setup_pins() {
+#if !defined(ARDUINO_WIO_TERMINAL)  // M5Stack
   //// GPIO
   // for PortB (ADC, GPIO input)
   // Default is for M5StickC/Plus, CoreInk
@@ -852,52 +872,10 @@ void setup() {
   pinMode(pin0_input, OUTPUT);
   pinMode(pin1_input, OUTPUT);
 #endif
-
-#if !defined(CONFIG_IDF_TARGET_ESP32S3)
-  if (myBoard == m5gfx::board_M5Atom) {
-    FastLED.addLeds<WS2811, LED_DATA_PIN, GRB>(leds, NUM_LEDS);
-    FastLED.setBrightness(20);
-  }
 #endif
+}
 
-  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-    // for Mic input
-    i2sInit();
-    xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
-    // LED
-    pinMode(GPIO_NUM_10, OUTPUT);
-    digitalWrite(GPIO_NUM_10, HIGH);
-  }
-#else
-  // Display
-  tft.begin();
-  tft.setRotation(3);
-
-  // IMU
-  lis.begin(Wire1);
-  delay(100);
-  lis.setOutputDataRate(LIS3DHTR_DATARATE_50HZ);
-  lis.setFullScaleRange(LIS3DHTR_RANGE_2G);
-  lis.openTemp();
-  //// Button
-  // 5 way switch
-  pinMode(WIO_5S_UP, INPUT_PULLUP);
-  pinMode(WIO_5S_DOWN, INPUT_PULLUP);
-  pinMode(WIO_5S_LEFT, INPUT_PULLUP);
-  pinMode(WIO_5S_RIGHT, INPUT_PULLUP);
-  pinMode(WIO_5S_PRESS, INPUT_PULLUP);
-  // 3 Configurable Button
-  pinMode(WIO_KEY_A, INPUT_PULLUP);
-  pinMode(WIO_KEY_B, INPUT_PULLUP);
-  pinMode(WIO_KEY_C, INPUT_PULLUP);
-  // Light sensor
-  pinMode(WIO_LIGHT, INPUT);
-  // microphone
-  pinMode(WIO_MIC, INPUT);
-  // LED
-  pinMode(LED_BUILTIN, OUTPUT);
-#endif
-
+void setup_BLE() {
   // Create MAC address base fixed ID
   uint8_t mac0[6] = { 0 };
 #if !defined(ARDUINO_WIO_TERMINAL)
@@ -1003,6 +981,50 @@ void setup() {
   pService->start();
   BLEAdvertising *pAdvertising = pServer->getAdvertising();
   pAdvertising->start();
+}
+
+void setup_WioTerminal() {
+#if defined(ARDUINO_WIO_TERMINAL)
+  // Display
+  tft.begin();
+  tft.setRotation(3);
+
+  // IMU
+  lis.begin(Wire1);
+  delay(100);
+  lis.setOutputDataRate(LIS3DHTR_DATARATE_50HZ);
+  lis.setFullScaleRange(LIS3DHTR_RANGE_2G);
+  lis.openTemp();
+  //// Button
+  // 5 way switch
+  pinMode(WIO_5S_UP, INPUT_PULLUP);
+  pinMode(WIO_5S_DOWN, INPUT_PULLUP);
+  pinMode(WIO_5S_LEFT, INPUT_PULLUP);
+  pinMode(WIO_5S_RIGHT, INPUT_PULLUP);
+  pinMode(WIO_5S_PRESS, INPUT_PULLUP);
+  // 3 Configurable Button
+  pinMode(WIO_KEY_A, INPUT_PULLUP);
+  pinMode(WIO_KEY_B, INPUT_PULLUP);
+  pinMode(WIO_KEY_C, INPUT_PULLUP);
+  // Light sensor
+  pinMode(WIO_LIGHT, INPUT);
+  // microphone
+  pinMode(WIO_MIC, INPUT);
+  // LED
+  pinMode(LED_BUILTIN, OUTPUT);
+#endif
+}
+
+void setup() {
+  Serial.begin(115200);
+
+#if defined(ARDUINO_WIO_TERMINAL)
+  setup_WioTerminal();
+#else  // M5Stack
+  setup_M5Stack();
+  setup_pins();
+#endif
+  setup_BLE();
 }
 
 void sendBtn(uint8_t btnID, uint8_t btn, uint8_t btn_status, uint8_t prev) {
