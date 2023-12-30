@@ -336,56 +336,60 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     pCharacteristic->setValue(cmd, 20);
   }
 
+  void display_text(const char *text) {
+    log_i(">> text\n");
+    log_i("%s\n", text);
+#if defined(ARDUINO_WIO_TERMINAL)
+    tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
+    if (stackchan_mode) {
+      // Draw fukidashi
+      tft.fillEllipse(0, 0, 320, TEXT_SPACE, TFT_WHITE);
+      tft.fillTriangle(320 / 2 - 320 * 0.1, TEXT_SPACE * 0.8,
+                       320 / 2, TEXT_SPACE * 1.5,
+                       320 / 2 + 320 * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+      tft.setTextColor(TFT_BLACK);
+    } else {
+      tft.setTextColor(TFT_WHITE);
+    }
+    tft.drawString(String(&(cmd_str[1])), 0, 0);
+#else
+    M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
+    if (stackchan_mode) {
+      // Draw fukidashi
+      M5.Lcd.fillEllipse(0, 0, M5.Lcd.width(), TEXT_SPACE, TFT_WHITE);
+      M5.Lcd.fillTriangle(M5.Lcd.width() / 2 - M5.Lcd.width() * 0.1, TEXT_SPACE * 0.8,
+                          M5.Lcd.width() / 2, TEXT_SPACE * 1.5,
+                          M5.Lcd.width() / 2 + M5.Lcd.width() * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+      M5.Lcd.setTextColor(TFT_BLACK);
+    } else {
+      M5.Lcd.setTextColor(TFT_WHITE);
+    }
+    M5.Lcd.setCursor(0, 0);
+    if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
+      M5.Lcd.setTextSize(4);
+    } else if (myBoard == m5gfx::board_M5StickC) {
+      M5.Lcd.setTextSize(2);
+    } else if (myBoard == m5gfx::board_M5StickCPlus) {
+      M5.Lcd.setTextSize(3);
+    }
+    M5.Lcd.println(text);
+#endif
+  }
+
   void cmd_display(const char *cmd_str) {
     char cmd_display = cmd_str[0] & 0b11111;
     switch (cmd_display) {
       case 0x00:
-        // CLEAR    0x00
+        // CLEAR
         log_i(">> clear\n");
         fillScreen(TFT_BLACK);
         break;
       case 0x01:
-        // TEXT     0x01
-        log_i(">> text\n");
-        log_i("%s\n", &(cmd_str[1]));
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
-        if (stackchan_mode) {
-          // Draw fukidashi
-          tft.fillEllipse(0, 0, 320, TEXT_SPACE, TFT_WHITE);
-          tft.fillTriangle(320 / 2 - 320 * 0.1, TEXT_SPACE * 0.8,
-                           320 / 2, TEXT_SPACE * 1.5,
-                           320 / 2 + 320 * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
-          tft.setTextColor(TFT_BLACK);
-        } else {
-          tft.setTextColor(TFT_WHITE);
-        }
-        tft.drawString(String(&(cmd_str[1])), 0, 0);
-#else
-        M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
-        if (stackchan_mode) {
-          // Draw fukidashi
-          M5.Lcd.fillEllipse(0, 0, M5.Lcd.width(), TEXT_SPACE, TFT_WHITE);
-          M5.Lcd.fillTriangle(M5.Lcd.width() / 2 - M5.Lcd.width() * 0.1, TEXT_SPACE * 0.8,
-                              M5.Lcd.width() / 2, TEXT_SPACE * 1.5,
-                              M5.Lcd.width() / 2 + M5.Lcd.width() * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
-          M5.Lcd.setTextColor(TFT_BLACK);
-        } else {
-          M5.Lcd.setTextColor(TFT_WHITE);
-        }
-        M5.Lcd.setCursor(0, 0);
-        if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
-          M5.Lcd.setTextSize(4);
-        } else if (myBoard == m5gfx::board_M5StickC) {
-          M5.Lcd.setTextSize(2);
-        } else if (myBoard == m5gfx::board_M5StickCPlus) {
-          M5.Lcd.setTextSize(3);
-        }
-        M5.Lcd.println(&(cmd_str[1]));
-#endif
+        // TEXT
+        display_text(&(cmd_str[1]));
         break;
       case 0x02:
-        // PIXELS_0 0x02
+        // PIXELS_0
         log_i(">> pixel0\n");
         for (int y = 0; y < 3; y++) {
           for (int x = 0; x < 5; x++) {
@@ -394,7 +398,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         }
         break;
       case 0x03:
-        // PIXELS_1 0x03
+        // PIXELS_1
         log_i(">> pixel1\n");
         for (int y = 3; y < 5; y++) {
           for (int x = 0; x < 5; x++) {
