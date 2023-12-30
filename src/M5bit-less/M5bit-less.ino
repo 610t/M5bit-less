@@ -336,34 +336,14 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     pCharacteristic->setValue(cmd, 20);
   }
 
-  void onWrite(BLECharacteristic *pCharacteristic) {
-    log_i("CMD write\n");
-    ////// MUST implement!!
-    //// CMD_CONFIG 0x00
-    // MIC    0x01
-    // TOUCH  0x02
-    //// CMD_PIN  0x01
-    // SET_OUTPUT 0x01
-    // SET_PWM    0x02
-    // SET_SERVO  0x03
-    // SET_PULL   0x04
-    // SET_EVENT  0x05
-
-    std::string value = pCharacteristic->getValue();
-    log_i("CMD len:%d\n", value.length());
-    log_i("%s\n", value.c_str());
-    const char *cmd_str = value.c_str();
-    log_i("%s\n", cmd_str);
-    char cmd = (cmd_str[0] >> 5);
-    if (cmd == 0x02) {
-      //// CMD_DISPLAY  0x02
-      log_i("CMD display\n");
-      char cmd_display = cmd_str[0] & 0b11111;
-      if (cmd_display == 0x00) {
+  void cmd_display(char cmd_display, const char *cmd_str) {
+    switch (cmd_display) {
+      case 0x00:
         // CLEAR    0x00
         log_i(">> clear\n");
         fillScreen(TFT_BLACK);
-      } else if (cmd_display == 0x01) {
+        break;
+      case 0x01:
         // TEXT     0x01
         log_i(">> text\n");
         log_i("%s\n", &(cmd_str[1]));
@@ -402,7 +382,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         }
         M5.Lcd.println(&(cmd_str[1]));
 #endif
-      } else if (cmd_display == 0x02) {
+        break;
+      case 0x02:
         // PIXELS_0 0x02
         log_i(">> pixel0\n");
         for (int y = 0; y < 3; y++) {
@@ -410,7 +391,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
             pixel[y][x] = (cmd_str[y * 5 + (x + 1)] & 0xb);
           }
         }
-      } else if (cmd_display == 0x03) {
+        break;
+      case 0x03:
         // PIXELS_1 0x03
         log_i(">> pixel1\n");
         for (int y = 3; y < 5; y++) {
@@ -419,12 +401,13 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           }
         }
         displayShowPixel();
-      }
-    } else if (cmd == 0x03) {
-      //// CMD_AUDIO  0x03
-      log_i("CMD audio\n");
-      char cmd_audio = cmd_str[0] & 0b11111;
-      if (cmd_audio == 0x00) {
+        break;
+    }
+  }
+
+  void cmd_audio(char cmd_audio, const char *cmd_str) {
+    switch (cmd_audio) {
+      case 0x00:
         // STOP_TONE  0x00
         log_i(">> Stop tone\n");
 
@@ -433,7 +416,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 #else
         M5.Speaker.stop();
 #endif
-      } else if (cmd_audio == 0x01) {
+        break;
+      case 0x01:
         // PLAY_TONE  0x01
         const uint8_t max_volume = 255;
         log_i(">> Play tone\n");
@@ -453,227 +437,267 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         M5.Speaker.setVolume(volume);
         M5.Speaker.tone(freq);
 #endif
-      }
-    } else if (cmd == 0x04) {
-      //// CMD_DATA (only v2) 0x04
-      log_i("CMD DATA\n");
+        break;
+    }
+  }
 
-      // Show input data.
-      log_i(">>> Data input:");
-      for (int i = 0; i <= 20; i++) {
-        log_i("(%d)%02x%c:", i, cmd_str[i], cmd_str[i]);
-      }
-      log_i("\n");
+  void cmd_data(const char *cmd_str) {
+    log_i("CMD DATA\n");
 
-      // Convert from input data to label & data.
-      char label[9] = { 0 };
-      strncpy(label, &cmd_str[1], sizeof(label) - 1);
-      String label_str = String(label);
+    // Show input data.
+    log_i(">>> Data input:");
+    for (int i = 0; i <= 20; i++) {
+      log_i("(%d)%02x%c:", i, cmd_str[i], cmd_str[i]);
+    }
+    log_i("\n");
 
-      char data[12] = { 0 };
-      strncpy(data, &cmd_str[9], sizeof(data) - 1);
-      String data_str = String(data);
+    // Convert from input data to label & data.
+    char label[9] = { 0 };
+    strncpy(label, &cmd_str[1], sizeof(label) - 1);
+    String label_str = String(label);
 
-      // Convert from 8bit uint8_t x 4 to 32bit float with little endian.
-      static union {
-        uint32_t i;
-        uint8_t b[sizeof(float)];
-        float f;
-      } conv_data;
-      conv_data.b[0] = cmd_str[9];
-      conv_data.b[1] = cmd_str[10];
-      conv_data.b[2] = cmd_str[11];
-      conv_data.b[3] = cmd_str[12];
-      float data_val = conv_data.f;
+    char data[12] = { 0 };
+    strncpy(data, &cmd_str[9], sizeof(data) - 1);
+    String data_str = String(data);
 
-      log_i("Label str:%s, Data str:%s, Data value:%f.\n", label_str, data_str, data_val);
+    // Convert from 8bit uint8_t x 4 to 32bit float with little endian.
+    static union {
+      uint32_t i;
+      uint8_t b[sizeof(float)];
+      float f;
+    } conv_data;
+    conv_data.b[0] = cmd_str[9];
+    conv_data.b[1] = cmd_str[10];
+    conv_data.b[2] = cmd_str[11];
+    conv_data.b[3] = cmd_str[12];
+    float data_val = conv_data.f;
 
-      // Can't get correct command for number=0x13 and text=0x14. Why?
-      char cmd_data = cmd_str[20];
-      if (cmd_data == 0x13) {
-        log_i("Data is Number.\n");
-      } else if (cmd_data == 0x14) {
-        log_i("Data is Text.\n");
-      } else {
-        log_i("Data is Unknown:%02x.\n", cmd_data);
-      }
+    log_i("Label str:%s, Data str:%s, Data value:%f.\n", label_str, data_str, data_val);
 
-      if (label_flag != 0) {
-        int label_location;
+    // Can't get correct command for number=0x13 and text=0x14. Why?
+    char cmd_data = cmd_str[20];
+    if (cmd_data == 0x13) {
+      log_i("Data is Number.\n");
+    } else if (cmd_data == 0x14) {
+      log_i("Data is Text.\n");
+    } else {
+      log_i("Data is Unknown:%02x.\n", cmd_data);
+    }
+
+    if (label_flag != 0) {
+      int label_location;
 #if !defined(ARDUINO_WIO_TERMINAL)
-        if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-          if (myBoard == m5gfx::board_M5StickC) {
-            label_location = 110;
-          } else if (myBoard == m5gfx::board_M5StickCPlus) {
-            label_location = 170;
-          }
-
-          M5.Lcd.setTextSize(1);
-          M5.Lcd.setTextColor(TFT_WHITE);
-          M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, TFT_BLACK);
-          M5.Lcd.setCursor(0, label_location);
-          M5.Lcd.printf("Label:%s\n", label);
-          M5.Lcd.printf("Data:%s\n", data);
-          M5.Lcd.printf(" val:");
-          if (data_val < 100000) {
-            M5.Lcd.printf("%8.2f", data_val);
-          } else {
-            M5.Lcd.printf("too big");
-          }
-        } else if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
-          int label_location_x = 210;
-          int label_location_y = 40;
-          int font_height = 20;
-          M5.Lcd.setTextSize(2);
-          M5.Lcd.setTextColor(TFT_WHITE);
-          M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), TFT_BLACK);
-          M5.Lcd.setCursor(label_location_x, label_location_y);
-          M5.Lcd.printf("Label:");
-          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
-          M5.Lcd.printf("%s", label);
-          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 2);
-          M5.Lcd.printf("Data :");
-          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 3);
-          M5.Lcd.printf("%s", data);
-          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 4);
-          M5.Lcd.printf(" val:");
-          M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 5);
-          if (data_val < 100000) {
-            M5.Lcd.printf("%8.2f", data_val);
-          } else {
-            M5.Lcd.printf("too big");
-          }
-        }
-      }
       if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-        // Change the LED brightness level to an integer value labeled "led".
-        if (strcmp(label, "led") == 0) {
-          M5.Power.setLed(constrain(data_val, 0, 255));
+        if (myBoard == m5gfx::board_M5StickC) {
+          label_location = 110;
+        } else if (myBoard == m5gfx::board_M5StickCPlus) {
+          label_location = 170;
         }
-#endif
-      }
 
-
-      //// Draw LCD graphics using label & data.
-      // Display label & data?
-      getLabelDataValue("label", label_str, &label_flag, data_val);
-      // Store variables
-      getLabelDataValue("x0", label_str, &x_0, data_val);
-      getLabelDataValue("y0", label_str, &y_0, data_val);
-      getLabelDataValue("x1", label_str, &x_1, data_val);
-      getLabelDataValue("y1", label_str, &y_1, data_val);
-      getLabelDataValue("x2", label_str, &x_2, data_val);
-      getLabelDataValue("y2", label_str, &y_2, data_val);
-      getLabelDataValue("xc", label_str, &x_c, data_val);
-      getLabelDataValue("yc", label_str, &y_c, data_val);
-      if (!label_str.compareTo("str")) {
-        str = data_str;
-      }
-      getLabelDataValue("size", label_str, &size, data_val);
-      getLabelDataValue("tc", label_str, &tc, data_val);
-      getLabelDataValue("w", label_str, &w, data_val);
-      getLabelDataValue("h", label_str, &h, data_val);
-      getLabelDataValue("r", label_str, &r, data_val);
-      getLabelDataValue("c", label_str, &c, data_val);
-
-      // Do command
-      if (!label_str.compareTo("cmd")) {
-        if (!data_str.compareTo("drawPixel")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.drawPixel(x_0, y_0, c);
-#else
-          M5.Lcd.drawPixel(x_0, y_0, c);
-#endif
-        } else if (!data_str.compareTo("drawLine")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.drawLine(x_0, y_0, x_1, y_1, c);
-#else
-          M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
-#endif
-        } else if (!data_str.compareTo("drawRect")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.drawRect(x_0, y_0, w, h, c);
-#else
-          M5.Lcd.drawRect(x_0, y_0, w, h, c);
-#endif
-        } else if (!data_str.compareTo("drawTriangl")) {  // "drawTriangle" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#else
-          M5.Lcd.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#endif
-        } else if (!data_str.compareTo("drawRoundRe")) {  // "drawRoundRect" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.drawRoundRect(x_0, y_0, w, h, r, c);
-#else
-          M5.Lcd.drawRoundRect(x_0, y_0, w, h, r, c);
-#endif
-        } else if (!data_str.compareTo("fillScreen")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.fillScreen(c);
-#else
-          M5.Lcd.fillScreen(c);
-#endif
-        } else if (!data_str.compareTo("fillRect")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.fillRect(x_0, y_0, w, h, c);
-#else
-          M5.Lcd.fillRect(x_0, y_0, w, h, c);
-#endif
-        } else if (!data_str.compareTo("fillCircle")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.fillCircle(x_0, y_0, r, c);
-#else
-          M5.Lcd.fillCircle(x_0, y_0, r, c);
-#endif
-        } else if (!data_str.compareTo("fillTriangl")) {  // "fillTriangle" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#else
-          M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#endif
-        } else if (!data_str.compareTo("fillRoundRe")) {  // "fillRoundRect" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.fillRoundRect(x_0, y_0, w, h, r, c);
-#else
-          M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
-#endif
-        } else if (!data_str.compareTo("print")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-          tft.setTextColor(tc);
-          tft.setTextSize(size);
-          tft.drawString(str, x_c, y_c);
-#else
-          M5.Lcd.setCursor(x_c, y_c);
-          M5.Lcd.setTextColor(tc);
-          M5.Lcd.setTextSize(size);
-          M5.Lcd.print(str);
-#endif
+        M5.Lcd.setTextSize(1);
+        M5.Lcd.setTextColor(TFT_WHITE);
+        M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, TFT_BLACK);
+        M5.Lcd.setCursor(0, label_location);
+        M5.Lcd.printf("Label:%s\n", label);
+        M5.Lcd.printf("Data:%s\n", data);
+        M5.Lcd.printf(" val:");
+        if (data_val < 100000) {
+          M5.Lcd.printf("%8.2f", data_val);
+        } else {
+          M5.Lcd.printf("too big");
+        }
+      } else if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
+        int label_location_x = 210;
+        int label_location_y = 40;
+        int font_height = 20;
+        M5.Lcd.setTextSize(2);
+        M5.Lcd.setTextColor(TFT_WHITE);
+        M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), TFT_BLACK);
+        M5.Lcd.setCursor(label_location_x, label_location_y);
+        M5.Lcd.printf("Label:");
+        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
+        M5.Lcd.printf("%s", label);
+        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 2);
+        M5.Lcd.printf("Data :");
+        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 3);
+        M5.Lcd.printf("%s", data);
+        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 4);
+        M5.Lcd.printf(" val:");
+        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 5);
+        if (data_val < 100000) {
+          M5.Lcd.printf("%8.2f", data_val);
+        } else {
+          M5.Lcd.printf("too big");
         }
       }
-
-      // Do StackChan command
-      if (!label_str.compareTo("stack")) {
-
-        if (!data_str.compareTo("eye")) {
-          draw_eye();
-        } else if (!data_str.compareTo("closeeye")) {
-          draw_closeeye();
-        } else if (!data_str.compareTo("mouth")) {
-          draw_mouth();
-        } else if (!data_str.compareTo("openmouth")) {
-          draw_openmouth();
-        } else if (!data_str.compareTo("say")) {
-          draw_openmouth();
-          delay(10);
-          draw_mouth();
-          delay(10);
-        } else if (!data_str.compareTo("on")) {
-          stackchan_mode = true;
-        } else if (!data_str.compareTo("off")) {
-          stackchan_mode = false;
-        }
+    }
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+      // Change the LED brightness level to an integer value labeled "led".
+      if (strcmp(label, "led") == 0) {
+        M5.Power.setLed(constrain(data_val, 0, 255));
       }
+#endif
+    }
+
+    //// Draw LCD graphics using label & data.
+    // Display label & data?
+    getLabelDataValue("label", label_str, &label_flag, data_val);
+    // Store variables
+    getLabelDataValue("x0", label_str, &x_0, data_val);
+    getLabelDataValue("y0", label_str, &y_0, data_val);
+    getLabelDataValue("x1", label_str, &x_1, data_val);
+    getLabelDataValue("y1", label_str, &y_1, data_val);
+    getLabelDataValue("x2", label_str, &x_2, data_val);
+    getLabelDataValue("y2", label_str, &y_2, data_val);
+    getLabelDataValue("xc", label_str, &x_c, data_val);
+    getLabelDataValue("yc", label_str, &y_c, data_val);
+    if (!label_str.compareTo("str")) {
+      str = data_str;
+    }
+    getLabelDataValue("size", label_str, &size, data_val);
+    getLabelDataValue("tc", label_str, &tc, data_val);
+    getLabelDataValue("w", label_str, &w, data_val);
+    getLabelDataValue("h", label_str, &h, data_val);
+    getLabelDataValue("r", label_str, &r, data_val);
+    getLabelDataValue("c", label_str, &c, data_val);
+
+    // Do command
+    if (!label_str.compareTo("cmd")) {
+      if (!data_str.compareTo("drawPixel")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.drawPixel(x_0, y_0, c);
+#else
+        M5.Lcd.drawPixel(x_0, y_0, c);
+#endif
+      } else if (!data_str.compareTo("drawLine")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.drawLine(x_0, y_0, x_1, y_1, c);
+#else
+        M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
+#endif
+      } else if (!data_str.compareTo("drawRect")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.drawRect(x_0, y_0, w, h, c);
+#else
+        M5.Lcd.drawRect(x_0, y_0, w, h, c);
+#endif
+      } else if (!data_str.compareTo("drawTriangl")) {  // "drawTriangle" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#else
+        M5.Lcd.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#endif
+      } else if (!data_str.compareTo("drawRoundRe")) {  // "drawRoundRect" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.drawRoundRect(x_0, y_0, w, h, r, c);
+#else
+        M5.Lcd.drawRoundRect(x_0, y_0, w, h, r, c);
+#endif
+      } else if (!data_str.compareTo("fillScreen")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.fillScreen(c);
+#else
+        M5.Lcd.fillScreen(c);
+#endif
+      } else if (!data_str.compareTo("fillRect")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.fillRect(x_0, y_0, w, h, c);
+#else
+        M5.Lcd.fillRect(x_0, y_0, w, h, c);
+#endif
+      } else if (!data_str.compareTo("fillCircle")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.fillCircle(x_0, y_0, r, c);
+#else
+        M5.Lcd.fillCircle(x_0, y_0, r, c);
+#endif
+      } else if (!data_str.compareTo("fillTriangl")) {  // "fillTriangle" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#else
+        M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
+#endif
+      } else if (!data_str.compareTo("fillRoundRe")) {  // "fillRoundRect" is over data length limit.
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.fillRoundRect(x_0, y_0, w, h, r, c);
+#else
+        M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
+#endif
+      } else if (!data_str.compareTo("print")) {
+#if defined(ARDUINO_WIO_TERMINAL)
+        tft.setTextColor(tc);
+        tft.setTextSize(size);
+        tft.drawString(str, x_c, y_c);
+#else
+        M5.Lcd.setCursor(x_c, y_c);
+        M5.Lcd.setTextColor(tc);
+        M5.Lcd.setTextSize(size);
+        M5.Lcd.print(str);
+#endif
+      }
+    }
+
+    // Do StackChan command
+    if (!label_str.compareTo("stack")) {
+
+      if (!data_str.compareTo("eye")) {
+        draw_eye();
+      } else if (!data_str.compareTo("closeeye")) {
+        draw_closeeye();
+      } else if (!data_str.compareTo("mouth")) {
+        draw_mouth();
+      } else if (!data_str.compareTo("openmouth")) {
+        draw_openmouth();
+      } else if (!data_str.compareTo("say")) {
+        draw_openmouth();
+        delay(10);
+        draw_mouth();
+        delay(10);
+      } else if (!data_str.compareTo("on")) {
+        stackchan_mode = true;
+      } else if (!data_str.compareTo("off")) {
+        stackchan_mode = false;
+      }
+    }
+  }
+
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    log_i("CMD write\n");
+    ////// MUST implement!!
+    //// CMD_CONFIG 0x00
+    // MIC    0x01
+    // TOUCH  0x02
+    //// CMD_PIN  0x01
+    // SET_OUTPUT 0x01
+    // SET_PWM    0x02
+    // SET_SERVO  0x03
+    // SET_PULL   0x04
+    // SET_EVENT  0x05
+
+    std::string value = pCharacteristic->getValue();
+    log_i("CMD len:%d\n", value.length());
+    log_i("%s\n", value.c_str());
+    const char *cmd_str = value.c_str();
+    log_i("%s\n", cmd_str);
+    char cmd = (cmd_str[0] >> 5);
+    switch (cmd) {
+      case 0x01:
+        // CMD_PIN: not implemented
+        break;
+      case 0x02:
+        //// CMD_DISPLAY
+        log_i("CMD display\n");
+        cmd_display(cmd_str[0] & 0b11111, cmd_str);
+        break;
+      case 0x03:
+        //// CMD_AUDIO
+        log_i("CMD audio\n");
+        cmd_audio(cmd_str[0] & 0b11111, cmd_str);
+        break;
+      case 0x04:
+        //// CMD_DATA (only v2)
+        cmd_data(cmd_str);
+        break;
     }
   }
 };
