@@ -707,11 +707,9 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 
 #if !defined(ARDUINO_WIO_TERMINAL)
     // On and off LED at M5StickC family.
-    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
-      // Change the LED brightness level to an integer value labeled "led".
-      if (strcmp(label, "led") == 0) {
-        M5.Power.setLed(constrain(data_val, 0, 255));
-      }
+    // Change the LED brightness level to an integer value labeled "led".
+    if (strcmp(label, "led") == 0) {
+      M5.Power.setLed(constrain(data_val, 0, 255));
     }
 #endif
 
