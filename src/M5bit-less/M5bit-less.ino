@@ -3,8 +3,20 @@
 m5::board_t myBoard = m5gfx::board_unknown;
 
 // PortB A/D, GPIO input
-int pin0;
-int pin1;
+int pin[2];
+
+enum pin_mode_t {
+  PIN_ANALOG_INPUT,
+  PIN_ANALOG_OUTPUT,
+  PIN_DIGITAL_INPUT,
+  PIN_DIGITAL_OUTPUT,
+  PIN_PWM,
+  PIN_SERVO,
+  PIN_PULL,
+  PIN_EVENT
+};
+
+pin_mode_t pin_mode[] = { PIN_ANALOG_INPUT, PIN_ANALOG_INPUT };
 #endif
 
 #include <Wire.h>
@@ -338,38 +350,42 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 
   void cmd_pin(const char *cmd_str) {
     char pin_cmd = (cmd_str[0] & 0x0f);
+    int pin_num = cmd_str[1];
+    int pin_value = cmd_str[2];
+
+    log_i("CMD_PIN\n");
+    log_i(" pin:%d, dat:%d\n", pin_num, pin_value);
+
     switch (pin_cmd) {
       case 0x01:
         // OUTPUT
-        log_i("CMD_PIN OUTPUT\n");
-        log_i(" pin:%d, dat:%d\n", cmd_str[1], cmd_str[2]);
+        log_i(" OUTPUT\n");
+        pin_mode[pin_num] = PIN_DIGITAL_OUTPUT;
 #if !defined(ARDUINO_WIO_TERMINAL)
-        if (cmd_str[1] == 0) {
-          pinMode(pin0, OUTPUT);
-          digitalWrite(pin0, cmd_str[2]);
-        } else if (cmd_str[1] == 1) {
-          pinMode(pin1, OUTPUT);
-          digitalWrite(pin1, cmd_str[2]);
-        }
+
+        pinMode(pin[pin_num], OUTPUT);
+        digitalWrite(pin[pin_num], pin_value);
 #endif
         break;
       case 0x02:
         // PWM
-        log_i("CMD_PIN PWM\n");
-        log_i(" pin:%d, duty:%d %%\n", cmd_str[1], cmd_str[2]);
+        log_i(" PWM\n");
+        pin_mode[pin_num] = PIN_PWM;
         break;
       case 0x03:
         // SERVO
-        log_i("CMD_PIN SERVO\n");
-        log_i(" pin:%d, degree:%d\n", cmd_str[1], cmd_str[2]);
+        log_i(" SERVO\n");
+        pin_mode[pin_num] = PIN_SERVO;
         break;
       case 0x04:
         // PULL
-        log_i("CMD_PIN PULL\n");
+        log_i(" PULL\n");
+        pin_mode[pin_num] = PIN_PULL;
         break;
       case 0x05:
         // EVENT
-        log_i("CMD_PIN EVENT\n");
+        log_i(" EVENT\n");
+        pin_mode[pin_num] = PIN_EVENT;
         break;
     }
   }
@@ -405,7 +421,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     M5.Lcd.setCursor(0, 0);
 
     // Text size to display text.
-    int text_size = 4; // Default value for Core, Core2, CoreS3, etc.
+    int text_size = 4;  // Default value for Core, Core2, CoreS3, etc.
     if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5AtomS3) {
       text_size = 2;
     } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
@@ -779,6 +795,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 class StateCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     float temp = 0;
+    int r0 = 0, r1 = 0;
 
 #if defined(ARDUINO_WIO_TERMINAL)
     temp = lis.getTemperature();
@@ -790,8 +807,13 @@ class StateCallbacks : public BLECharacteristicCallbacks {
     log_i(">> sound Level " + String(mic));
 #else
     // GPIO input from PIN0 & PIN1.
-    int r0 = analogRead(pin0);
-    int r1 = analogRead(pin1);
+    if (pin_mode[0] == PIN_ANALOG_INPUT) {
+      r0 = analogRead(pin[0]);
+    }
+    if (pin_mode[1] == PIN_ANALOG_INPUT) {
+      r1 = analogRead(pin[1]);
+    }
+
     state[0] = 0;
     if (r0 >= 2048) {
       state[0] |= 0b01;
@@ -875,10 +897,13 @@ class ActionCallbacks : public BLECharacteristicCallbacks {
 // for Analog pin
 class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
+    int r = 0;
 #if !defined(ARDUINO_WIO_TERMINAL)
-    int r = map(analogRead(pin0), 0, 4095, 0, 1023);
+    if (pin_mode[0] == PIN_ANALOG_INPUT) {
+      r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
+    }
 #else
-    int r = analogRead(0);
+    r = analogRead(0);
 #endif
     log_i("Analog Pin0 Read:%d\n", r);
 
@@ -891,10 +916,11 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
 
 class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
+    int r = 0;
 #if !defined(ARDUINO_WIO_TERMINAL)
-    int r = map(analogRead(pin1), 0, 4095, 0, 1023);
+    r = map(analogRead(pin[1]), 0, 4095, 0, 1023);
 #else
-    int r = analogRead(0);
+    r = analogRead(0);
 #endif
     log_i("Analog Pin1 Read:%d\n", r);
 
@@ -939,39 +965,39 @@ void setup_pins() {
   //// GPIO
   // for PortB (ADC, GPIO input)
   // Default is for M5StickC/Plus, CoreInk
-  pin0 = GPIO_NUM_33;
-  pin1 = GPIO_NUM_32;
+  pin[0] = GPIO_NUM_33;
+  pin[1] = GPIO_NUM_32;
 
   switch (myBoard) {
     case m5gfx::board_M5Atom:
     case m5gfx::board_M5AtomU:
     case m5gfx::board_M5AtomPsram:
-      pin0 = GPIO_NUM_32;
-      pin1 = GPIO_NUM_26;
+      pin[0] = GPIO_NUM_32;
+      pin[1] = GPIO_NUM_26;
       break;
 
     case m5gfx::board_M5Stack:
     case m5gfx::board_M5StackCore2:
     case m5gfx::board_M5Tough:
-      pin0 = GPIO_NUM_36;
-      pin1 = GPIO_NUM_26;
+      pin[0] = GPIO_NUM_36;
+      pin[1] = GPIO_NUM_26;
       break;
 
     case m5gfx::board_M5Paper:
-      pin0 = GPIO_NUM_33;
-      pin1 = GPIO_NUM_26;
+      pin[0] = GPIO_NUM_33;
+      pin[1] = GPIO_NUM_26;
       break;
 
     case m5gfx::board_M5StackCoreS3:  // for portB
-      pin0 = GPIO_NUM_8;
-      pin1 = GPIO_NUM_9;
+      pin[0] = GPIO_NUM_8;
+      pin[1] = GPIO_NUM_9;
       break;
 
     case m5gfx::board_M5AtomS3:
     case m5gfx::board_M5Cardputer:
     case m5gfx::board_M5Dial:  // for portB
-      pin0 = GPIO_NUM_1;
-      pin1 = GPIO_NUM_2;
+      pin[0] = GPIO_NUM_1;
+      pin[1] = GPIO_NUM_2;
       break;
 
     default:
