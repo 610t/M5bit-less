@@ -354,10 +354,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x02:
         // PWM
         log_i("CMD_PIN PWM\n");
+        log_i(" pin:%d, duty:%d %%\n", cmd_str[1], cmd_str[2]);
         break;
       case 0x03:
         // SERVO
         log_i("CMD_PIN SERVO\n");
+        log_i(" pin:%d, degree:%d\n", cmd_str[1], cmd_str[2]);
         break;
       case 0x04:
         // PULL
