@@ -403,7 +403,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       M5.Lcd.setTextSize(4);
     } else if (myBoard == m5gfx::board_M5StickC) {
       M5.Lcd.setTextSize(2);
-    } else if (myBoard == m5gfx::board_M5StickCPlus) {
+    } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
       M5.Lcd.setTextSize(3);
     }
     M5.Lcd.println(text);
@@ -484,10 +484,10 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
   void display_label_data(char *label, char *data, float data_val) {
     int label_location;
 #if !defined(ARDUINO_WIO_TERMINAL)
-    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
       if (myBoard == m5gfx::board_M5StickC) {
         label_location = 110;
-      } else if (myBoard == m5gfx::board_M5StickCPlus) {
+      } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
         label_location = 170;
       }
 
@@ -705,7 +705,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 
 #if !defined(ARDUINO_WIO_TERMINAL)
     // On and off LED at M5StickC family.
-    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
       // Change the LED brightness level to an integer value labeled "led".
       if (strcmp(label, "led") == 0) {
         M5.Power.setLed(constrain(data_val, 0, 255));
@@ -790,7 +790,7 @@ class StateCallbacks : public BLECharacteristicCallbacks {
       state[0] |= 0b10;
     }
 
-    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
       state[6] = ((int)map(soundLevel, 0, 1024, 0, 255) & 0xff);
     } else {
       state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
@@ -917,7 +917,7 @@ void setup_M5Stack() {
 #endif
 
   // for Mic input
-  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+  if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
     i2sInit();
     xTaskCreate(mic_record_task, "mic_record_task", 2048, NULL, 1, NULL);
   }
