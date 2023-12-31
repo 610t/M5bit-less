@@ -343,6 +343,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         // OUTPUT
         log_i("CMD_PIN OUTPUT\n");
         log_i(" pin:%d, dat:%d\n", cmd_str[1], cmd_str[2]);
+#if !defined(ARDUINO_WIO_TERMINAL)
         if (cmd_str[1] == 0) {
           pinMode(pin0, OUTPUT);
           digitalWrite(pin0, cmd_str[2]);
@@ -350,6 +351,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
           pinMode(pin1, OUTPUT);
           digitalWrite(pin1, cmd_str[2]);
         }
+#endif
         break;
       case 0x02:
         // PWM
@@ -387,7 +389,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     } else {
       tft.setTextColor(TFT_WHITE);
     }
-    tft.drawString(String(&(cmd_str[1])), 0, 0);
+    tft.drawString(String(text), 0, 0);
 #else
     M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
     if (stackchan_mode) {
@@ -705,13 +707,13 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       display_label_data(label, data, data_val);
     }
 
-#if !defined(ARDUINO_WIO_TERMINAL)
     // On and off LED at M5StickC family.
     // Change the LED brightness level to an integer value labeled "led".
     if (strcmp(label, "led") == 0) {
+#if !defined(ARDUINO_WIO_TERMINAL)
       M5.Power.setLed(constrain(data_val, 0, 255));
-    }
 #endif
+    }
 
     // Set variables for drawing object.
     set_variables(label_str, data_val, data_str);
