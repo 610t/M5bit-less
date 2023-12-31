@@ -336,6 +336,40 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     pCharacteristic->setValue(cmd, 20);
   }
 
+  void cmd_pin(const char *cmd_str) {
+    char pin_cmd = (cmd_str[0] & 0x0f);
+    switch (pin_cmd) {
+      case 0x01:
+        // OUTPUT
+        log_i("CMD_PIN OUTPUT\n");
+        log_i(" pin:%d, dat:%d\n", cmd_str[1], cmd_str[2]);
+        if (cmd_str[1] == 0) {
+          pinMode(pin0, OUTPUT);
+          digitalWrite(pin0, cmd_str[2]);
+        } else if (cmd_str[1] == 1) {
+          pinMode(pin1, OUTPUT);
+          digitalWrite(pin1, cmd_str[2]);
+        }
+        break;
+      case 0x02:
+        // PWM
+        log_i("CMD_PIN PWM\n");
+        break;
+      case 0x03:
+        // SERVO
+        log_i("CMD_PIN SERVO\n");
+        break;
+      case 0x04:
+        // PULL
+        log_i("CMD_PIN PULL\n");
+        break;
+      case 0x05:
+        // EVENT
+        log_i("CMD_PIN EVENT\n");
+        break;
+    }
+  }
+
   void display_text(const char *text) {
     log_i(">> text\n");
     log_i("%s\n", text);
@@ -687,6 +721,11 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     log_i("%s\n", cmd_str);
     char cmd = (cmd_str[0] >> 5);
     switch (cmd) {
+      case 0x01:
+        // CMD_PIN
+        log_i("CMD pin\n");
+        cmd_pin(cmd_str);
+        break;
       case 0x02:
         //// CMD_DISPLAY
         log_i("CMD display\n");
@@ -699,41 +738,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         break;
       case 0x04:
         //// CMD_DATA (only v2)
+        log_i("CMD data\n");
         cmd_data(cmd_str);
-        break;
-      case 0x01:
-        // CMD_PIN: just a place holder.
-        char pin_cmd = (cmd_str[0] & 0x0f);
-        switch (pin_cmd) {
-          case 0x01:
-            // OUTPUT
-            log_i("CMD_PIN OUTPUT\n");
-            log_i(" pin:%d, dat:%d\n", cmd_str[1], cmd_str[2]);
-            if (cmd_str[1] == 0) {
-              pinMode(pin0, OUTPUT);
-              digitalWrite(pin0, cmd_str[2]);
-            } else if (cmd_str[1] == 1) {
-              pinMode(pin1, OUTPUT);
-              digitalWrite(pin1, cmd_str[2]);
-            }
-            break;
-          case 0x02:
-            // PWM
-            log_i("CMD_PIN PWM\n");
-            break;
-          case 0x03:
-            // SERVO
-            log_i("CMD_PIN SERVO\n");
-            break;
-          case 0x04:
-            // PULL
-            log_i("CMD_PIN PULL\n");
-            break;
-          case 0x05:
-            // EVENT
-            log_i("CMD_PIN EVENT\n");
-            break;
-        }
         break;
     }
   }
