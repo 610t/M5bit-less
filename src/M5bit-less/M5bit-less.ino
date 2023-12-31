@@ -403,13 +403,15 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       M5.Lcd.setTextColor(TFT_WHITE);
     }
     M5.Lcd.setCursor(0, 0);
-    if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
-      M5.Lcd.setTextSize(4);
-    } else if (myBoard == m5gfx::board_M5StickC) {
-      M5.Lcd.setTextSize(2);
+
+    // Text size to display text.
+    int text_size = 4; // Default value for Core, Core2, CoreS3, etc.
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5AtomS3) {
+      text_size = 2;
     } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
-      M5.Lcd.setTextSize(3);
+      text_size = 3;
     }
+    M5.Lcd.setTextSize(text_size);
     M5.Lcd.println(text);
 #endif
   }
