@@ -481,105 +481,57 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     }
   }
 
-  void cmd_data(const char *cmd_str) {
-    log_i("CMD DATA\n");
-
-    // Show input data.
-    log_i(">>> Data input:");
-    for (int i = 0; i <= 20; i++) {
-      log_i("(%d)%02x%c:", i, cmd_str[i], cmd_str[i]);
-    }
-    log_i("\n");
-
-    // Convert from input data to label & data.
-    char label[9] = { 0 };
-    strncpy(label, &cmd_str[1], sizeof(label) - 1);
-    String label_str = String(label);
-
-    char data[12] = { 0 };
-    strncpy(data, &cmd_str[9], sizeof(data) - 1);
-    String data_str = String(data);
-
-    // Convert from 8bit uint8_t x 4 to 32bit float with little endian.
-    static union {
-      uint32_t i;
-      uint8_t b[sizeof(float)];
-      float f;
-    } conv_data;
-    conv_data.b[0] = cmd_str[9];
-    conv_data.b[1] = cmd_str[10];
-    conv_data.b[2] = cmd_str[11];
-    conv_data.b[3] = cmd_str[12];
-    float data_val = conv_data.f;
-
-    log_i("Label str:%s, Data str:%s, Data value:%f.\n", label_str, data_str, data_val);
-
-    // Can't get correct command for number=0x13 and text=0x14. Why?
-    char cmd_data = cmd_str[20];
-    if (cmd_data == 0x13) {
-      log_i("Data is Number.\n");
-    } else if (cmd_data == 0x14) {
-      log_i("Data is Text.\n");
-    } else {
-      log_i("Data is Unknown:%02x.\n", cmd_data);
-    }
-
-    if (label_flag != 0) {
-      int label_location;
+  void display_label_data(char *label, char *data, float data_val) {
+    int label_location;
 #if !defined(ARDUINO_WIO_TERMINAL)
-      if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-        if (myBoard == m5gfx::board_M5StickC) {
-          label_location = 110;
-        } else if (myBoard == m5gfx::board_M5StickCPlus) {
-          label_location = 170;
-        }
-
-        M5.Lcd.setTextSize(1);
-        M5.Lcd.setTextColor(TFT_WHITE);
-        M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, TFT_BLACK);
-        M5.Lcd.setCursor(0, label_location);
-        M5.Lcd.printf("Label:%s\n", label);
-        M5.Lcd.printf("Data:%s\n", data);
-        M5.Lcd.printf(" val:");
-        if (data_val < 100000) {
-          M5.Lcd.printf("%8.2f", data_val);
-        } else {
-          M5.Lcd.printf("too big");
-        }
-      } else if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
-        int label_location_x = 210;
-        int label_location_y = 40;
-        int font_height = 20;
-        M5.Lcd.setTextSize(2);
-        M5.Lcd.setTextColor(TFT_WHITE);
-        M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), TFT_BLACK);
-        M5.Lcd.setCursor(label_location_x, label_location_y);
-        M5.Lcd.printf("Label:");
-        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
-        M5.Lcd.printf("%s", label);
-        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 2);
-        M5.Lcd.printf("Data :");
-        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 3);
-        M5.Lcd.printf("%s", data);
-        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 4);
-        M5.Lcd.printf(" val:");
-        M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 5);
-        if (data_val < 100000) {
-          M5.Lcd.printf("%8.2f", data_val);
-        } else {
-          M5.Lcd.printf("too big");
-        }
-      }
-    }
     if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
-      // Change the LED brightness level to an integer value labeled "led".
-      if (strcmp(label, "led") == 0) {
-        M5.Power.setLed(constrain(data_val, 0, 255));
+      if (myBoard == m5gfx::board_M5StickC) {
+        label_location = 110;
+      } else if (myBoard == m5gfx::board_M5StickCPlus) {
+        label_location = 170;
       }
-#endif
-    }
 
-    //// Draw LCD graphics using label & data.
+      M5.Lcd.setTextSize(1);
+      M5.Lcd.setTextColor(TFT_WHITE);
+      M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, TFT_BLACK);
+      M5.Lcd.setCursor(0, label_location);
+      M5.Lcd.printf("Label:%s\n", label);
+      M5.Lcd.printf("Data:%s\n", data);
+      M5.Lcd.printf(" val:");
+      if (data_val < 100000) {
+        M5.Lcd.printf("%8.2f", data_val);
+      } else {
+        M5.Lcd.printf("too big");
+      }
+    } else if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
+      int label_location_x = 210;
+      int label_location_y = 40;
+      int font_height = 20;
+      M5.Lcd.setTextSize(2);
+      M5.Lcd.setTextColor(TFT_WHITE);
+      M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), TFT_BLACK);
+      M5.Lcd.setCursor(label_location_x, label_location_y);
+      M5.Lcd.printf("Label:");
+      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
+      M5.Lcd.printf("%s", label);
+      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 2);
+      M5.Lcd.printf("Data :");
+      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 3);
+      M5.Lcd.printf("%s", data);
+      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 4);
+      M5.Lcd.printf(" val:");
+      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 5);
+      if (data_val < 100000) {
+        M5.Lcd.printf("%8.2f", data_val);
+      } else {
+        M5.Lcd.printf("too big");
+      }
+    }
+#endif
+  }
+
+  void
+  set_variables(String label_str, float data_val, String data_str) {
     // Display label & data?
     getLabelDataValue("label", label_str, &label_flag, data_val);
     // Store variables
@@ -600,8 +552,9 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     getLabelDataValue("h", label_str, &h, data_val);
     getLabelDataValue("r", label_str, &r, data_val);
     getLabelDataValue("c", label_str, &c, data_val);
+  }
 
-    // Do command
+  void label_draw_cmd(String label_str, String data_str) {
     if (!label_str.compareTo("cmd")) {
       if (!data_str.compareTo("drawPixel")) {
 #if defined(ARDUINO_WIO_TERMINAL)
@@ -676,8 +629,9 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 #endif
       }
     }
+  }
 
-    // Do StackChan command
+  void label_stackchan_cmd(String label_str, String data_str) {
     if (!label_str.compareTo("stack")) {
 
       if (!data_str.compareTo("eye")) {
@@ -699,6 +653,72 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         stackchan_mode = false;
       }
     }
+  }
+
+  void cmd_data(const char *cmd_str) {
+    log_i("CMD DATA\n");
+
+    // Show input data.
+    log_i(">>> Data input:");
+    for (int i = 0; i <= 20; i++) {
+      log_i("(%d)%02x%c:", i, cmd_str[i], cmd_str[i]);
+    }
+    log_i("\n");
+
+    // Convert from input data to label & data.
+    char label[9] = { 0 };
+    strncpy(label, &cmd_str[1], sizeof(label) - 1);
+    String label_str = String(label);
+
+    char data[12] = { 0 };
+    strncpy(data, &cmd_str[9], sizeof(data) - 1);
+    String data_str = String(data);
+
+    // Convert from 8bit uint8_t x 4 to 32bit float with little endian.
+    static union {
+      uint32_t i;
+      uint8_t b[sizeof(float)];
+      float f;
+    } conv_data;
+    conv_data.b[0] = cmd_str[9];
+    conv_data.b[1] = cmd_str[10];
+    conv_data.b[2] = cmd_str[11];
+    conv_data.b[3] = cmd_str[12];
+    float data_val = conv_data.f;
+
+    log_i("Label str:%s, Data str:%s, Data value:%f.\n", label_str, data_str, data_val);
+
+    // Can't get correct command for number=0x13 and text=0x14. Why?
+    char cmd_data = cmd_str[20];
+    if (cmd_data == 0x13) {
+      log_i("Data is Number.\n");
+    } else if (cmd_data == 0x14) {
+      log_i("Data is Text.\n");
+    } else {
+      log_i("Data is Unknown:%02x.\n", cmd_data);
+    }
+
+    // Show label & data at display.
+    if (label_flag != 0) {
+      display_label_data(label, data, data_val);
+    }
+
+#if !defined(ARDUINO_WIO_TERMINAL)
+    // On and off LED at M5StickC family.
+    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus) {
+      // Change the LED brightness level to an integer value labeled "led".
+      if (strcmp(label, "led") == 0) {
+        M5.Power.setLed(constrain(data_val, 0, 255));
+      }
+    }
+#endif
+
+    // Set variables for drawing object.
+    set_variables(label_str, data_val, data_str);
+
+    // Do command: for drawing and stackchan
+    label_draw_cmd(label_str, data_str);
+    label_stackchan_cmd(label_str, data_str);
   }
 
   void onWrite(BLECharacteristic *pCharacteristic) {
