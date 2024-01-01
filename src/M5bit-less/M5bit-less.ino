@@ -3,7 +3,7 @@
 m5::board_t myBoard = m5gfx::board_unknown;
 
 // PortB A/D, GPIO input
-int pin[2];
+int pin[17];  // Microbit More can handle P0-P16.
 
 enum pin_mode_t {
   PIN_ANALOG_INPUT,
@@ -16,7 +16,7 @@ enum pin_mode_t {
   PIN_EVENT
 };
 
-pin_mode_t pin_mode[] = { PIN_ANALOG_INPUT, PIN_ANALOG_INPUT };
+pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
 #endif
 
 #include <Wire.h>
@@ -362,7 +362,6 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         log_i(" OUTPUT\n");
         pin_mode[pin_num] = PIN_DIGITAL_OUTPUT;
 #if !defined(ARDUINO_WIO_TERMINAL)
-
         pinMode(pin[pin_num], OUTPUT);
         digitalWrite(pin[pin_num], pin_value);
 #endif
