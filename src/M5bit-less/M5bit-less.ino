@@ -901,9 +901,7 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     int r = 0;
 #if !defined(ARDUINO_WIO_TERMINAL)
-    if (pin_mode[0] == PIN_ANALOG_INPUT) {
-      r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
-    }
+    r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
 #else
     r = analogRead(0);
 #endif
