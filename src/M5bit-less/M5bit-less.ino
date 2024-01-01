@@ -375,6 +375,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x03:
         // SERVO
         log_i(" SERVO\n");
+        log_i("  range:%d, center:%d\n", cmd_str[3], cmd_str[4]);
         pin_mode[pin_num] = PIN_SERVO;
         break;
       case 0x04:
