@@ -370,6 +370,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         // PWM
         log_i(" PWM\n");
         pin_mode[pin_num] = PIN_PWM;
+        analogWrite(pin[pin_num], pin_value);
         break;
       case 0x03:
         // SERVO
