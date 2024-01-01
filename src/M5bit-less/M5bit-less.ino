@@ -377,6 +377,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         log_i(" SERVO\n");
         log_i("  range:%d, center:%d\n", cmd_str[3], cmd_str[4]);
         pin_mode[pin_num] = PIN_SERVO;
+        analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
         break;
       case 0x04:
         // PULL
