@@ -104,6 +104,13 @@ SPEAKER Beep;
 #undef max
 #endif
 
+/// Drawing Function for M5Stack or Wio Terminal.
+#if defined(ARDUINO_WIO_TERMINAL)
+#define Draw tft
+#else
+#define Draw M5.Lcd
+#endif
+
 //// BLE related headers.
 #if defined(ARDUINO_WIO_TERMINAL)
 #include <rpcBLEDevice.h>
@@ -190,10 +197,8 @@ void drawPixel(int x, int y, int c) {
 #endif
   int ps = (w < (h - TEXT_SPACE)) ? w / 5 : (h - TEXT_SPACE) / 5;  // Pixel size
 
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
-#else
-  M5.Lcd.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+  Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+#if !defined(ARDUINO_WIO_TERMINAL)
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
   if (myBoard == m5gfx::board_M5Atom) {
     if (c == TFT_BLACK) {
@@ -223,9 +228,9 @@ void displayShowPixel() {
 };
 
 void fillScreen(int c) {
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillScreen(c);
-#else
+  Draw.fillScreen(c);
+#if !defined(ARDUINO_WIO_TERMINAL)
+  // for Atom Matrix and Lite
   if (myBoard == m5gfx::board_M5Atom) {
     for (int x = 0; x < 5; x++) {
       for (int y = 0; y < 5; y++) {
@@ -233,7 +238,6 @@ void fillScreen(int c) {
       }
     }
   }
-  M5.Lcd.fillScreen(c);
 #endif
 };
 
@@ -590,74 +594,32 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
   void label_draw_cmd(String label_str, String data_str) {
     if (!label_str.compareTo("cmd")) {
       if (!data_str.compareTo("drawPixel")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.drawPixel(x_0, y_0, c);
-#else
-        M5.Lcd.drawPixel(x_0, y_0, c);
-#endif
+        Draw.drawPixel(x_0, y_0, c);
       } else if (!data_str.compareTo("drawLine")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.drawLine(x_0, y_0, x_1, y_1, c);
-#else
-        M5.Lcd.drawLine(x_0, y_0, x_1, y_1, c);
-#endif
+        Draw.drawLine(x_0, y_0, x_1, y_1, c);
       } else if (!data_str.compareTo("drawRect")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.drawRect(x_0, y_0, w, h, c);
-#else
-        M5.Lcd.drawRect(x_0, y_0, w, h, c);
-#endif
+        Draw.drawRect(x_0, y_0, w, h, c);
       } else if (!data_str.compareTo("drawTriangl")) {  // "drawTriangle" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#else
-        M5.Lcd.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#endif
+        Draw.drawTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
       } else if (!data_str.compareTo("drawRoundRe")) {  // "drawRoundRect" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.drawRoundRect(x_0, y_0, w, h, r, c);
-#else
-        M5.Lcd.drawRoundRect(x_0, y_0, w, h, r, c);
-#endif
+        Draw.drawRoundRect(x_0, y_0, w, h, r, c);
       } else if (!data_str.compareTo("fillScreen")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillScreen(c);
-#else
-        M5.Lcd.fillScreen(c);
-#endif
+        Draw.fillScreen(c);
       } else if (!data_str.compareTo("fillRect")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillRect(x_0, y_0, w, h, c);
-#else
-        M5.Lcd.fillRect(x_0, y_0, w, h, c);
-#endif
+        Draw.fillRect(x_0, y_0, w, h, c);
       } else if (!data_str.compareTo("fillCircle")) {
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillCircle(x_0, y_0, r, c);
-#else
-        M5.Lcd.fillCircle(x_0, y_0, r, c);
-#endif
+        Draw.fillCircle(x_0, y_0, r, c);
       } else if (!data_str.compareTo("fillTriangl")) {  // "fillTriangle" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#else
-        M5.Lcd.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
-#endif
+        Draw.fillTriangle(x_0, y_0, x_1, y_1, x_2, y_2, c);
       } else if (!data_str.compareTo("fillRoundRe")) {  // "fillRoundRect" is over data length limit.
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.fillRoundRect(x_0, y_0, w, h, r, c);
-#else
-        M5.Lcd.fillRoundRect(x_0, y_0, w, h, r, c);
-#endif
+        Draw.fillRoundRect(x_0, y_0, w, h, r, c);
       } else if (!data_str.compareTo("print")) {
+        Draw.setTextColor(tc);
+        Draw.setTextSize(size);
 #if defined(ARDUINO_WIO_TERMINAL)
-        tft.setTextColor(tc);
-        tft.setTextSize(size);
         tft.drawString(str, x_c, y_c);
 #else
         M5.Lcd.setCursor(x_c, y_c);
-        M5.Lcd.setTextColor(tc);
-        M5.Lcd.setTextSize(size);
         M5.Lcd.print(str);
 #endif
       }
@@ -1038,16 +1000,13 @@ void setup_BLE() {
 
   // Start up screen
   fillScreen(TFT_BLUE);
+  Draw.setTextSize(2);
 #if defined(ARDUINO_WIO_TERMINAL)
-  tft.setTextSize(2);
   tft.setCursor(0, 0);
-  tft.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
-  tft.println(adv_str);
-#else
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
-  M5.Lcd.println(adv_str);
 #endif
+  Draw.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
+  Draw.println(adv_str);
+
 
   log_i("BLE start.\n");
   log_i("%s\n", adv_str);
