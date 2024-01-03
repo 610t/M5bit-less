@@ -1,8 +1,15 @@
+//// Global variables.
+// For Stack-chan
+bool stackchan_mode = false;
+
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
+
+//// Global variables for M5Stack.
+// Board name
 m5::board_t myBoard = m5gfx::board_unknown;
 
-// PortB A/D, GPIO input
+// PortB A/D I/O, GPIO I/O, PWM, Servo, etc.
 int pin[17];  // Microbit More can handle P0-P16.
 
 enum pin_mode_t {
@@ -17,13 +24,8 @@ enum pin_mode_t {
 };
 
 pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
-#endif
 
-#include <Wire.h>
-
-// For Stack-chan
-bool stackchan_mode = false;
-
+//// FastLED for Atom Matrix, Lite.
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <FastLED.h>
 #define NUM_LEDS 25
@@ -31,33 +33,7 @@ bool stackchan_mode = false;
 CRGB leds[NUM_LEDS];
 #endif
 
-#if defined(ARDUINO_WIO_TERMINAL)
-#include "WioTerminal_utils.h"
-// Display
-#include "TFT_eSPI.h"
-TFT_eSPI tft;
-
-// For IMU
-#include "LIS3DHTR.h"
-#include <SPI.h>
-LIS3DHTR<TwoWire> lis;
-// Tone
-SPEAKER Beep;
-#endif
-#if defined(ARDUINO_WIO_TERMINAL)
-// Dirty hack avoid conflicting min/max macro and function
-#undef min
-#undef max
-#include <rpcBLEDevice.h>
-#else
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#endif
-#include <BLEServer.h>
-#include <BLE2902.h>
-
-// Mic for M5StickC/Plus
-#if !defined(ARDUINO_WIO_TERMINAL)
+//// Mic for M5StickC/Plus
 #include <driver/i2s.h>
 
 #define PIN_CLK 0
@@ -107,6 +83,38 @@ void mic_record_task(void *arg) {
 }
 #endif
 
+#include <Wire.h>
+
+#if defined(ARDUINO_WIO_TERMINAL)
+#include "WioTerminal_utils.h"
+
+//// Global variables for Wio Terminal.
+// Display
+#include "TFT_eSPI.h"
+TFT_eSPI tft;
+
+// For IMU
+#include "LIS3DHTR.h"
+#include <SPI.h>
+LIS3DHTR<TwoWire> lis;
+// Tone
+SPEAKER Beep;
+// Dirty hack avoid conflicting min/max macro and function
+#undef min
+#undef max
+#endif
+
+//// BLE related headers.
+#if defined(ARDUINO_WIO_TERMINAL)
+#include <rpcBLEDevice.h>
+#else
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#endif
+#include <BLEServer.h>
+#include <BLE2902.h>
+
+//// BLE characteristics.
 #define MBIT_MORE_SERVICE "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
 #define MBIT_MORE_CH_COMMAND "0b500100-607f-4151-9091-7d008d6ffc5c"       // R&W(20byte)
 #define MBIT_MORE_CH_STATE "0b500101-607f-4151-9091-7d008d6ffc5c"         // R(7byte)
@@ -119,6 +127,7 @@ void mic_record_task(void *arg) {
 #define MBIT_MORE_CH_MESSAGE "0b500130-607f-4151-9091-7d008d6ffc5c"       // R : only for v2
 #define ADVERTISING_STRING "BBC micro:bit [m5scr]"
 
+/// Data of channels.
 // COMMAND CH 20byte
 uint8_t cmd[] = { 0x02,  // microbit version (v1:0x01, v2:0x02)
                   0x02,  // protocol 0x02 only
@@ -238,10 +247,10 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onDisconnect(BLEServer *pServer) {
     log_i("disconnect\n");
     deviceConnected = false;
-#if !defined(ARDUINO_WIO_TERMINAL)
-    ESP.restart();
-#else
+#if defined(ARDUINO_WIO_TERMINAL)
     setup();
+#else
+    ESP.restart();
 #endif
   }
 };
