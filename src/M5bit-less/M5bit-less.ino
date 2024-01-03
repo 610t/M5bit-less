@@ -370,8 +370,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x01:
         // OUTPUT
         log_i(" OUTPUT\n");
-        pin_mode[pin_num] = PIN_DIGITAL_OUTPUT;
 #if !defined(ARDUINO_WIO_TERMINAL)
+        pin_mode[pin_num] = PIN_DIGITAL_OUTPUT;
         pinMode(pin[pin_num], OUTPUT);
         digitalWrite(pin[pin_num], pin_value);
 #endif
@@ -379,25 +379,33 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x02:
         // PWM
         log_i(" PWM\n");
+#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_PWM;
         analogWrite(pin[pin_num], pin_value);
+#endif
         break;
       case 0x03:
         // SERVO
         log_i(" SERVO\n");
         log_i("  range:%d, center:%d\n", cmd_str[3], cmd_str[4]);
+#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_SERVO;
         analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
+#endif
         break;
       case 0x04:
         // PULL
         log_i(" PULL\n");
+#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_PULL;
+#endif
         break;
       case 0x05:
         // EVENT
         log_i(" EVENT\n");
+#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_EVENT;
+#endif
         break;
     }
   }
