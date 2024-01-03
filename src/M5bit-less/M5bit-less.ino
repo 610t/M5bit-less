@@ -2,6 +2,10 @@
 // For Stack-chan
 bool stackchan_mode = false;
 
+// Screen size
+int screen_w = 320;
+int screen_h = 240;
+
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
 
@@ -188,14 +192,7 @@ bool deviceConnected = false;
 uint16_t pixel[5][5] = { 0 };
 
 void drawPixel(int x, int y, int c) {
-#if defined(ARDUINO_WIO_TERMINAL)
-  int w = 320;
-  int h = 240;
-#else
-  int w = M5.Lcd.width();
-  int h = M5.Lcd.height();
-#endif
-  int ps = (w < (h - TEXT_SPACE)) ? w / 5 : (h - TEXT_SPACE) / 5;  // Pixel size
+  int ps = (screen_w < (screen_h - TEXT_SPACE)) ? screen_w / 5 : (screen_h - TEXT_SPACE) / 5;  // Pixel size
 
   Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
 #if !defined(ARDUINO_WIO_TERMINAL)
@@ -290,11 +287,11 @@ void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data
 // Stackchan Draw command
 #if !defined(ARDUINO_WIO_TERMINAL)
 int norm_x(int x) {
-  return (int(x / 320.0 * M5.Lcd.width()));
+  return (int(x / 320.0 * screen_w));
 }
 
 int norm_y(int y) {
-  return (int(y / 240.0 * M5.Lcd.height()));
+  return (int(y / 240.0 * screen_h));
 }
 #endif
 
@@ -422,13 +419,13 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     }
     tft.drawString(String(text), 0, 0);
 #else
-    M5.Lcd.fillRect(0, 0, M5.Lcd.width(), TEXT_SPACE - 1, TFT_BLACK);
+    M5.Lcd.fillRect(0, 0, screen_w, TEXT_SPACE - 1, TFT_BLACK);
     if (stackchan_mode) {
       // Draw fukidashi
-      M5.Lcd.fillEllipse(0, 0, M5.Lcd.width(), TEXT_SPACE, TFT_WHITE);
-      M5.Lcd.fillTriangle(M5.Lcd.width() / 2 - M5.Lcd.width() * 0.1, TEXT_SPACE * 0.8,
-                          M5.Lcd.width() / 2, TEXT_SPACE * 1.5,
-                          M5.Lcd.width() / 2 + M5.Lcd.width() * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+      M5.Lcd.fillEllipse(0, 0, screen_w, TEXT_SPACE, TFT_WHITE);
+      M5.Lcd.fillTriangle(screen_w / 2 - screen_w * 0.1, TEXT_SPACE * 0.8,
+                          screen_w / 2, TEXT_SPACE * 1.5,
+                          screen_w / 2 + screen_w * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
       M5.Lcd.setTextColor(TFT_BLACK);
     } else {
       M5.Lcd.setTextColor(TFT_WHITE);
@@ -530,7 +527,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 
       M5.Lcd.setTextSize(1);
       M5.Lcd.setTextColor(TFT_WHITE);
-      M5.Lcd.fillRect(0, label_location, M5.Lcd.width(), M5.Lcd.height() - label_location, TFT_BLACK);
+      M5.Lcd.fillRect(0, label_location, screen_w, screen_h - label_location, TFT_BLACK);
       M5.Lcd.setCursor(0, label_location);
       M5.Lcd.printf("Label:%s\n", label);
       M5.Lcd.printf("Data:%s\n", data);
@@ -546,7 +543,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       int font_height = 20;
       M5.Lcd.setTextSize(2);
       M5.Lcd.setTextColor(TFT_WHITE);
-      M5.Lcd.fillRect(label_location_x, label_location_y, M5.Lcd.width() - label_location_x, M5.Lcd.height(), TFT_BLACK);
+      M5.Lcd.fillRect(label_location_x, label_location_y, screen_w - label_location_x, screen_h, TFT_BLACK);
       M5.Lcd.setCursor(label_location_x, label_location_y);
       M5.Lcd.printf("Label:");
       M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
@@ -1119,9 +1116,13 @@ void setup() {
 
 #if defined(ARDUINO_WIO_TERMINAL)
   setup_WioTerminal();
+  screen_w = 320;
+  screen_h = 240;
 #else  // M5Stack
   setup_M5Stack();
   setup_pins();
+  screen_w = M5.Lcd.width();
+  screen_h = M5.Lcd.height();
 #endif
   setup_BLE();
 }
