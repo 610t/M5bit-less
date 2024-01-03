@@ -285,7 +285,6 @@ void getLabelDataValue(char *var_name, String label_str, uint32_t *var, int data
 }
 
 // Stackchan Draw command
-#if !defined(ARDUINO_WIO_TERMINAL)
 int norm_x(int x) {
   return (int(x / 320.0 * screen_w));
 }
@@ -293,62 +292,35 @@ int norm_x(int x) {
 int norm_y(int y) {
   return (int(y / 240.0 * screen_h));
 }
-#endif
 
 void clear_eyes() {
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(0, 0, 320, 120, TFT_BLACK);
-#else
-  M5.Lcd.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
-#endif
+  Draw.fillRect(norm_x(0), norm_y(0), norm_x(320), norm_y(120), TFT_BLACK);
 }
 
 void clear_mouth() {
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(0, 120, 320, 120, TFT_BLACK);
-#else
-  M5.Lcd.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
-#endif
+  Draw.fillRect(norm_x(0), norm_y(120), norm_x(320), norm_y(120), TFT_BLACK);
 }
 
 void draw_eye() {
   clear_eyes();
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillCircle(90, 93, 8, TFT_WHITE);
-  tft.fillCircle(230, 96, 8, TFT_WHITE);
-#else
-  M5.Lcd.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
-  M5.Lcd.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
-#endif
+  Draw.fillCircle(norm_x(90), norm_y(93), norm_y(8), TFT_WHITE);
+  Draw.fillCircle(norm_x(230), norm_y(96), norm_y(8), TFT_WHITE);
 }
 
 void draw_closeeye() {
   clear_eyes();
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(82, 93, 16, 4, TFT_WHITE);
-  tft.fillRect(222, 93, 16, 4, TFT_WHITE);
-#else
-  M5.Lcd.fillRect(norm_x(82), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
-  M5.Lcd.fillRect(norm_x(222), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
-#endif
+  Draw.fillRect(norm_x(82), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
+  Draw.fillRect(norm_x(222), norm_y(93), norm_x(16), norm_y(4), TFT_WHITE);
 }
 
 void draw_mouth() {
   clear_mouth();
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(163 - 45, 148, 90, 4, TFT_WHITE);
-#else
-  M5.Lcd.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
-#endif
+  Draw.fillRect(norm_x(163 - 45), norm_y(148), norm_x(90), norm_y(4), TFT_WHITE);
 }
 
 void draw_openmouth() {
   clear_mouth();
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.fillRect(140, 130, 40, 40, TFT_WHITE);
-#else
-  M5.Lcd.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
-#endif
+  Draw.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
 }
 
 // Microbit More Command handling
@@ -413,31 +385,19 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
   void display_text(const char *text) {
     log_i(">> text\n");
     log_i("%s\n", text);
-#if defined(ARDUINO_WIO_TERMINAL)
-    tft.fillRect(0, 0, 320, TEXT_SPACE - 1, TFT_BLACK);
+    Draw.fillRect(0, 0, screen_w, TEXT_SPACE - 1, TFT_BLACK);
     if (stackchan_mode) {
-      // Draw fukidashi
-      tft.fillEllipse(0, 0, 320, TEXT_SPACE, TFT_WHITE);
-      tft.fillTriangle(320 / 2 - 320 * 0.1, TEXT_SPACE * 0.8,
-                       320 / 2, TEXT_SPACE * 1.5,
-                       320 / 2 + 320 * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
-      tft.setTextColor(TFT_BLACK);
+      Draw.fillEllipse(0, 0, screen_w, TEXT_SPACE, TFT_WHITE);
+      Draw.fillTriangle(screen_w / 2 - screen_w * 0.1, TEXT_SPACE * 0.8,
+                        screen_w / 2, TEXT_SPACE * 1.5,
+                        screen_w / 2 + screen_w * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
+      Draw.setTextColor(TFT_BLACK);
     } else {
-      tft.setTextColor(TFT_WHITE);
+      Draw.setTextColor(TFT_WHITE);
     }
+#if defined(ARDUINO_WIO_TERMINAL)
     tft.drawString(String(text), 0, 0);
 #else
-    M5.Lcd.fillRect(0, 0, screen_w, TEXT_SPACE - 1, TFT_BLACK);
-    if (stackchan_mode) {
-      // Draw fukidashi
-      M5.Lcd.fillEllipse(0, 0, screen_w, TEXT_SPACE, TFT_WHITE);
-      M5.Lcd.fillTriangle(screen_w / 2 - screen_w * 0.1, TEXT_SPACE * 0.8,
-                          screen_w / 2, TEXT_SPACE * 1.5,
-                          screen_w / 2 + screen_w * 0.1, TEXT_SPACE * 0.5, TFT_WHITE);
-      M5.Lcd.setTextColor(TFT_BLACK);
-    } else {
-      M5.Lcd.setTextColor(TFT_WHITE);
-    }
     M5.Lcd.setCursor(0, 0);
 
     // Text size to display text.
