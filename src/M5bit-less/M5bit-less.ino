@@ -669,11 +669,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 #if !defined(ARDUINO_WIO_TERMINAL)
       M5.Power.setLed(constrain(data_val, 0, 255));
 #else
-      if (constrain(data_val, 0, 255) >= 128) {
-        digitalWrite(LED_BUILTIN, HIGH);
-      } else {
-        digitalWrite(LED_BUILTIN, LOW);
-      }
+      analogWrite(LED_BUILTIN, constrain(data_val, 0, 255));
 #endif
     }
 
