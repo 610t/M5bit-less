@@ -498,6 +498,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
         label_location_y = 170;
       }
+    } else if (myBoard == m5gfx::board_M5Cardputer) {
+      label_location_x = 0;
+      label_location_y = 170;
+    } else if (myBoard == m5gfx::board_M5AtomS3) {
+      label_location_x = 0;
+      label_location_y = 100;
     }
 #endif
     Draw.setTextSize(text_size);
