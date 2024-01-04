@@ -482,52 +482,42 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
   }
 
   void display_label_data(char *label, char *data, float data_val) {
-    int label_location;
-#if !defined(ARDUINO_WIO_TERMINAL)
-    if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
-      if (myBoard == m5gfx::board_M5StickC) {
-        label_location = 110;
-      } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
-        label_location = 170;
-      }
+    int label_location_x = 210;
+    int label_location_y = 40;
+    int font_height = 10;
+    int text_size = 1;
 
-      M5.Lcd.setTextSize(1);
-      M5.Lcd.setTextColor(TFT_WHITE);
-      M5.Lcd.fillRect(0, label_location, screen_w, screen_h - label_location, TFT_BLACK);
-      M5.Lcd.setCursor(0, label_location);
-      M5.Lcd.printf("Label:%s\n", label);
-      M5.Lcd.printf("Data:%s\n", data);
-      M5.Lcd.printf(" val:");
-      if (data_val < 100000) {
-        M5.Lcd.printf("%8.2f", data_val);
-      } else {
-        M5.Lcd.printf("too big");
-      }
-    } else if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2) {
-      int label_location_x = 210;
-      int label_location_y = 40;
-      int font_height = 20;
-      M5.Lcd.setTextSize(2);
-      M5.Lcd.setTextColor(TFT_WHITE);
-      M5.Lcd.fillRect(label_location_x, label_location_y, screen_w - label_location_x, screen_h, TFT_BLACK);
-      M5.Lcd.setCursor(label_location_x, label_location_y);
-      M5.Lcd.printf("Label:");
-      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 1);
-      M5.Lcd.printf("%s", label);
-      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 2);
-      M5.Lcd.printf("Data :");
-      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 3);
-      M5.Lcd.printf("%s", data);
-      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 4);
-      M5.Lcd.printf(" val:");
-      M5.Lcd.setCursor(label_location_x, label_location_y + font_height * 5);
-      if (data_val < 100000) {
-        M5.Lcd.printf("%8.2f", data_val);
-      } else {
-        M5.Lcd.printf("too big");
+#if !defined(ARDUINO_WIO_TERMINAL)
+    if (myBoard == m5gfx::board_M5Stack || myBoard == m5gfx::board_M5StackCore2 || myBoard == m5gfx::board_M5StackCoreS3) {
+      label_location_x = 210;
+      label_location_y = 40;
+    } else if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
+      label_location_x = 0;
+      if (myBoard == m5gfx::board_M5StickC) {
+        label_location_y = 110;
+      } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
+        label_location_y = 170;
       }
     }
 #endif
+    Draw.setTextSize(text_size);
+    Draw.setTextColor(TFT_WHITE);
+
+    // Draw.fillRect(0, label_location_y, screen_w, screen_h - label_location_y, TFT_BLACK);
+    // Draw.fillRect(label_location_x, label_location_y, screen_w - label_location_x, screen_h, TFT_BLACK);
+    Draw.fillRect(label_location_x, label_location_y, screen_w - label_location_x, screen_h - label_location_y, TFT_BLACK);
+
+    Draw.setCursor(label_location_x, label_location_y);
+    Draw.printf("Label:%s\n", label);
+    Draw.setCursor(label_location_x, label_location_y + font_height * 1);
+    Draw.printf("Data:%s\n", data);
+    Draw.setCursor(label_location_x, label_location_y + font_height * 2);
+    Draw.printf(" val:");
+    if (data_val < 100000) {
+      Draw.printf("%8.2f", data_val);
+    } else {
+      Draw.printf("too big");
+    }
   }
 
   void
