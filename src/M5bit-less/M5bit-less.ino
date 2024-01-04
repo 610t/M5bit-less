@@ -6,13 +6,6 @@ bool stackchan_mode = false;
 int screen_w = 320;
 int screen_h = 240;
 
-#if !defined(ARDUINO_WIO_TERMINAL)
-#include <M5Unified.h>
-
-//// Global variables for M5Stack.
-// Board name
-m5::board_t myBoard = m5gfx::board_unknown;
-
 // PortB A/D I/O, GPIO I/O, PWM, Servo, etc.
 int pin[17];  // Microbit More can handle P0-P16.
 
@@ -28,6 +21,13 @@ enum pin_mode_t {
 };
 
 pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
+
+#if !defined(ARDUINO_WIO_TERMINAL)
+#include <M5Unified.h>
+
+//// Global variables for M5Stack.
+// Board name
+m5::board_t myBoard = m5gfx::board_unknown;
 
 //// FastLED for Atom Matrix, Lite.
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -342,42 +342,32 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x01:
         // OUTPUT
         log_i(" OUTPUT\n");
-#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_DIGITAL_OUTPUT;
         pinMode(pin[pin_num], OUTPUT);
         digitalWrite(pin[pin_num], pin_value);
-#endif
         break;
       case 0x02:
         // PWM
         log_i(" PWM\n");
-#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_PWM;
         analogWrite(pin[pin_num], pin_value);
-#endif
         break;
       case 0x03:
         // SERVO
         log_i(" SERVO\n");
         log_i("  range:%d, center:%d\n", cmd_str[3], cmd_str[4]);
-#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_SERVO;
         analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
-#endif
         break;
       case 0x04:
         // PULL
         log_i(" PULL\n");
-#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_PULL;
-#endif
         break;
       case 0x05:
         // EVENT
         log_i(" EVENT\n");
-#if !defined(ARDUINO_WIO_TERMINAL)
         pin_mode[pin_num] = PIN_EVENT;
-#endif
         break;
     }
   }
@@ -822,11 +812,7 @@ class ActionCallbacks : public BLECharacteristicCallbacks {
 class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     int r = 0;
-#if !defined(ARDUINO_WIO_TERMINAL)
     r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
-#else
-    r = analogRead(0);
-#endif
     log_i("Analog Pin0 Read:%d\n", r);
 
     analog[0] = (r & 0xff);
@@ -839,11 +825,7 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
 class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     int r = 0;
-#if !defined(ARDUINO_WIO_TERMINAL)
     r = map(analogRead(pin[1]), 0, 4095, 0, 1023);
-#else
-    r = analogRead(0);
-#endif
     log_i("Analog Pin1 Read:%d\n", r);
 
     analog[0] = (r & 0xff);
@@ -883,7 +865,13 @@ void setup_M5Stack() {
 }
 
 void setup_pins() {
-#if !defined(ARDUINO_WIO_TERMINAL)  // M5Stack
+#if defined(ARDUINO_WIO_TERMINAL)
+  pin[0] = A0;
+  pin[1] = A1;
+  // for Analog input.
+  pinMode(pin[0], INPUT);
+  pinMode(pin[1], INPUT);
+#else  // M5Stack
   //// GPIO
   // for PortB (ADC, GPIO input)
   // Default is for M5StickC/Plus, CoreInk
@@ -1072,10 +1060,10 @@ void setup() {
   screen_h = 240;
 #else  // M5Stack
   setup_M5Stack();
-  setup_pins();
   screen_w = M5.Lcd.width();
   screen_h = M5.Lcd.height();
 #endif
+  setup_pins();
   setup_BLE();
 }
 
