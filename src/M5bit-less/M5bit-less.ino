@@ -395,21 +395,19 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     } else {
       Draw.setTextColor(TFT_WHITE);
     }
-#if defined(ARDUINO_WIO_TERMINAL)
-    tft.drawString(String(text), 0, 0);
-#else
-    M5.Lcd.setCursor(0, 0);
 
-    // Text size to display text.
-    int text_size = 4;  // Default value for Core, Core2, CoreS3, etc.
+    int text_size = 4;
+#if !defined(ARDUINO_WIO_TERMINAL)
     if (myBoard == m5gfx::board_M5StickC || myBoard == m5gfx::board_M5AtomS3) {
       text_size = 2;
     } else if (myBoard == m5gfx::board_M5StickCPlus || myBoard == m5gfx::board_M5StickCPlus2) {
       text_size = 3;
     }
-    M5.Lcd.setTextSize(text_size);
-    M5.Lcd.println(text);
 #endif
+
+    Draw.setCursor(0, 0);
+    Draw.setTextSize(text_size);
+    Draw.println(text);
   }
 
   void cmd_display(const char *cmd_str) {
@@ -581,12 +579,8 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       } else if (!data_str.compareTo("print")) {
         Draw.setTextColor(tc);
         Draw.setTextSize(size);
-#if defined(ARDUINO_WIO_TERMINAL)
-        tft.drawString(str, x_c, y_c);
-#else
-        M5.Lcd.setCursor(x_c, y_c);
-        M5.Lcd.print(str);
-#endif
+        Draw.setCursor(x_c, y_c);
+        Draw.print(str);
       }
     }
   }
@@ -962,9 +956,7 @@ void setup_BLE() {
   // Start up screen
   fillScreen(TFT_BLUE);
   Draw.setTextSize(2);
-#if defined(ARDUINO_WIO_TERMINAL)
-  tft.setCursor(0, 0);
-#endif
+  Draw.setCursor(0, 0);
   Draw.print("Welcome to\nM5bit Less!!\nPlease connect to\n");
   Draw.println(adv_str);
 
