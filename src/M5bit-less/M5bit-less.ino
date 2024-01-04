@@ -1133,10 +1133,14 @@ uint8_t prevA = 0, prevB = 0, prevC = 0;
 uint32_t old_label_time = 0;
 
 void loop() {
-  if (deviceConnected) {
-#if !defined(ARDUINO_WIO_TERMINAL)
-    M5.update();
+  // Board status update.
+#if defined(ARDUINO_WIO_TERMINAL)
+  Beep.update();
+#else
+  M5.update();
 #endif
+
+  if (deviceConnected) {
     // Send notify data for button A, B and C(LOGO).
     uint8_t btnA = 0, btnB = 0, btnC = 0,
             btn_statusA = 0, btn_statusB = 0, btn_statusC = 0;
@@ -1224,8 +1228,4 @@ void loop() {
       old_label_time = label_time;
     }
   }
-
-#if defined(ARDUINO_WIO_TERMINAL)
-  Beep.update();
-#endif
 };
