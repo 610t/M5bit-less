@@ -835,6 +835,19 @@ class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   }
 };
 
+class AnalogPinCallback2 : public BLECharacteristicCallbacks {
+  void onRead(BLECharacteristic *pCharacteristic) {
+    int r = 0;
+    r = map(analogRead(pin[2]), 0, 4095, 0, 1023);
+    log_i("Analog Pin2 Read:%d\n", r);
+
+    analog[0] = (r & 0xff);
+    analog[1] = ((r >> 8) & 0xff);
+
+    pCharacteristic->setValue(analog, 2);
+  }
+};
+
 void setup_M5Stack() {
 #if !defined(ARDUINO_WIO_TERMINAL)  // M5Stack
   // Init M5Stack.
@@ -875,8 +888,8 @@ void setup_pins() {
   //// GPIO
   // for PortB (ADC, GPIO input)
   // Default is for M5StickC/Plus, CoreInk
-  pin[0] = GPIO_NUM_33;
-  pin[1] = GPIO_NUM_32;
+  pin[0] = GPIO_NUM_33;  // Port.A (Universal)
+  pin[1] = GPIO_NUM_32;  // Port.A (Universal)
 
   switch (myBoard) {
     case m5gfx::board_M5Atom:
@@ -887,27 +900,39 @@ void setup_pins() {
       break;
 
     case m5gfx::board_M5Stack:
+      pin[0] = GPIO_NUM_36;  // Port.B
+      pin[1] = GPIO_NUM_26;  // Port.B
+      pin[2] = GPIO_NUM_22;  // Port.A
+      pin[8] = GPIO_NUM_31;  // Port.A
+      break;
+
     case m5gfx::board_M5StackCore2:
     case m5gfx::board_M5Tough:
-      pin[0] = GPIO_NUM_36;
-      pin[1] = GPIO_NUM_26;
+      pin[0] = GPIO_NUM_36;  // Port.B
+      pin[1] = GPIO_NUM_26;  // Port.B
+      pin[2] = GPIO_NUM_33;  // Port.A
+      pin[8] = GPIO_NUM_32;  // Port.A
       break;
 
     case m5gfx::board_M5Paper:
-      pin[0] = GPIO_NUM_33;
-      pin[1] = GPIO_NUM_26;
+      pin[0] = GPIO_NUM_33;  // Port.B
+      pin[1] = GPIO_NUM_26;  // Port.B
+      pin[2] = GPIO_NUM_32;  // Port.A
+      pin[8] = GPIO_NUM_25;  // Port.A
       break;
 
-    case m5gfx::board_M5StackCoreS3:  // for portB
-      pin[0] = GPIO_NUM_8;
-      pin[1] = GPIO_NUM_9;
+    case m5gfx::board_M5StackCoreS3:
+      pin[0] = GPIO_NUM_8;  // Port.B
+      pin[1] = GPIO_NUM_9;  // Port.B
+      pin[2] = GPIO_NUM_1;  // Port.A
+      pin[8] = GPIO_NUM_2;  // Port.A
       break;
 
     case m5gfx::board_M5AtomS3:
     case m5gfx::board_M5Cardputer:
-    case m5gfx::board_M5Dial:  // for portB
-      pin[0] = GPIO_NUM_1;
-      pin[1] = GPIO_NUM_2;
+    case m5gfx::board_M5Dial:
+      pin[0] = GPIO_NUM_1;  // Port.A (Universal)
+      pin[1] = GPIO_NUM_2;  // Port.A (Universal)
       break;
 
     default:
@@ -1002,7 +1027,7 @@ void setup_BLE() {
   pCharacteristic[7] = pService->createCharacteristic(
     MBIT_MORE_CH_ANALOG_IN_P2,
     BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[7]->setCallbacks(new DummyCallbacks());
+  pCharacteristic[7]->setCallbacks(new AnalogPinCallback2());
   pCharacteristic[7]->addDescriptor(new BLE2902());
 
 
