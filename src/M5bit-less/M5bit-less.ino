@@ -194,7 +194,12 @@ uint16_t pixel[5][5] = { 0 };
 void drawPixel(int x, int y, int c) {
   int ps = (screen_w < (screen_h - TEXT_SPACE)) ? screen_w / 5 : (screen_h - TEXT_SPACE) / 5;  // Pixel size
 
-  Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+  if (c == TFT_RED && (myBoard == m5gfx::board_M5StackCoreInk || myBoard == m5gfx::board_M5Paper)) {
+    Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, TFT_WHITE);
+  } else {
+    Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+  }
+
 #if !defined(ARDUINO_WIO_TERMINAL)
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
   if (myBoard == m5gfx::board_M5Atom) {
