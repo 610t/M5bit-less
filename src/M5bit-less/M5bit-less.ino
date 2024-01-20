@@ -1279,6 +1279,20 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
 
+      //// Encoder for M5Dial
+      if (myBoard == m5gfx::board_M5Dial) {
+        cd.f = (float)M5Dial.Encoder.read();
+        memset((char *)(action), 0, 20);  // clear action buffer
+        action[19] = DATA_NUMBER;
+        action[0] = 'e';  // Label 'e'
+        action[8] = cd.b[0];
+        action[9] = cd.b[1];
+        action[10] = cd.b[2];
+        action[11] = cd.b[3];
+        pCharacteristic[4]->setValue(action, 20);
+        pCharacteristic[4]->notify();
+      }
+
 #if !defined(ARDUINO_WIO_TERMINAL)
       if (myBoard == m5gfx::board_M5Stack) {
         // keyboard input for M5Stack Faces
