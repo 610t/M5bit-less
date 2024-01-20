@@ -6,6 +6,12 @@ bool stackchan_mode = false;
 int screen_w = 320;
 int screen_h = 240;
 
+// Converter 32bit float little endian and uint8_t x 4 each other.
+static union {
+  uint8_t b[sizeof(float)];
+  float f;
+} cd;
+
 // PortB A/D I/O, GPIO I/O, PWM, Servo, etc.
 int pin[17];  // Microbit More can handle P0-P16.
 
@@ -24,6 +30,7 @@ pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
 
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
+#include <M5Dial.h>
 
 //// Global variables for M5Stack.
 // Board name
@@ -179,6 +186,9 @@ uint8_t action[] = {
   0x00, 0x00, 0x00,
   0x12  // ACTION Event
 };
+// Define for label command
+#define DATA_NUMBER 0x13
+#define DATA_TEXT 0x14
 
 // ANALOG PIN 2 byte
 uint8_t analog[] = { 0x00, 0x00 };
@@ -620,16 +630,11 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     String data_str = String(data);
 
     // Convert from 8bit uint8_t x 4 to 32bit float with little endian.
-    static union {
-      uint32_t i;
-      uint8_t b[sizeof(float)];
-      float f;
-    } conv_data;
-    conv_data.b[0] = cmd_str[9];
-    conv_data.b[1] = cmd_str[10];
-    conv_data.b[2] = cmd_str[11];
-    conv_data.b[3] = cmd_str[12];
-    float data_val = conv_data.f;
+    cd.b[0] = cmd_str[9];
+    cd.b[1] = cmd_str[10];
+    cd.b[2] = cmd_str[11];
+    cd.b[3] = cmd_str[12];
+    float data_val = cd.f;
 
     log_i("Label str:%s, Data str:%s, Data value:%f.\n", label_str, data_str, data_val);
 
@@ -865,6 +870,11 @@ void setup_M5Stack() {
   M5.Speaker.config(spk_cfg);
   M5.Speaker.begin();
   myBoard = M5.getBoard();
+
+  // Setup M5Dial
+  if (myBoard == m5gfx::board_M5Dial) {
+    M5Dial.begin(cfg, true, false);
+  }
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
   // Init FastLED(NeoPixel).
@@ -1162,6 +1172,9 @@ void loop() {
   Beep.update();
 #else
   M5.update();
+  if (myBoard == m5gfx::board_M5Dial) {
+    M5Dial.update();
+  }
 #endif
 
   if (deviceConnected) {
@@ -1214,17 +1227,58 @@ void loop() {
 
     updateGesture();
 
-    // Send dummy data label='a' data=random('a'-'z') every 50ms
     uint32_t label_time = (uint32_t)millis();
     if (label_time - old_label_time > 50) {
+      // Send dummy data label='a' data=random('a'-'z') every 50ms
       memset((char *)(action), 0, 20);  // clear action buffer
-      action[19] = 0x14;                // DATA_TEXT
-      action[0] = 0x61;                 // 'a'
+      action[19] = DATA_TEXT;
+      action[0] = 'a';  // Label 'a'
       action[1] = 0;
-      action[8] = 0x61 + random(26);  // 'a-z'
+      action[8] = 'a' + random(26);  // 'a-z'
       action[9] = 0;
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
+
+      //// Send touch panel information
+      // Get touch panel data.
+      float tx;
+      float ty;
+      if (myBoard == m5gfx::board_M5Dial) {
+        auto t = M5Dial.Touch.getDetail();
+        tx = t.x;
+        ty = t.y;
+      } else {
+        auto t = M5.Touch.getDetail();
+        tx = t.x;
+        ty = t.y;
+      }
+
+      // Send X axis as 'tx'
+      cd.f = (float)tx;
+      memset((char *)(action), 0, 20);  // clear action buffer
+      action[19] = DATA_NUMBER;
+      action[0] = 't';  // Label 'tx'
+      action[1] = 'x';
+      action[8] = cd.b[0];
+      action[9] = cd.b[1];
+      action[10] = cd.b[2];
+      action[11] = cd.b[3];
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+
+      // Send Y axis as 'ty'
+      cd.f = (float)ty;
+      memset((char *)(action), 0, 20);  // clear action buffer
+      action[19] = DATA_NUMBER;
+      action[0] = 't';  // Label 'ty'
+      action[1] = 'y';
+      action[8] = cd.b[0];
+      action[9] = cd.b[1];
+      action[10] = cd.b[2];
+      action[11] = cd.b[3];
+      pCharacteristic[4]->setValue(action, 20);
+      pCharacteristic[4]->notify();
+
 #if !defined(ARDUINO_WIO_TERMINAL)
       if (myBoard == m5gfx::board_M5Stack) {
         // keyboard input for M5Stack Faces
@@ -1234,10 +1288,10 @@ void loop() {
             char c = Wire.read();             // receive a byte as character
             Serial.printf("Key:%c\n", c);     // print the character
             memset((char *)(action), 0, 20);  // clear action buffer
-            action[19] = 0x14;                // DATA_TEXT
-            action[0] = 0x4b;                 // 'K'
-            action[1] = 0x65;                 // 'e'
-            action[2] = 0x79;                 // 'y'
+            action[19] = DATA_TEXT;
+            action[0] = 'K';  // Label 'Key'
+            action[1] = 'e';
+            action[2] = 'y';
             action[3] = 0x00;
             action[8] = c;  // Key character
             action[9] = 0;
