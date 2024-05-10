@@ -204,11 +204,16 @@ uint16_t pixel[5][5] = { 0 };
 void drawPixel(int x, int y, int c) {
   int ps = (screen_w < (screen_h - TEXT_SPACE)) ? screen_w / 5 : (screen_h - TEXT_SPACE) / 5;  // Pixel size
 
+#if !defined(ARDUINO_WIO_TERMINAL)
   if (c == TFT_RED && (myBoard == m5gfx::board_M5StackCoreInk || myBoard == m5gfx::board_M5Paper)) {
     Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, TFT_WHITE);
   } else {
     Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
   }
+#else
+  Draw.fillRect(x * ps, y * ps + TEXT_SPACE, ps, ps, c);
+#endif
+
 
 #if !defined(ARDUINO_WIO_TERMINAL)
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -871,10 +876,12 @@ void setup_M5Stack() {
   M5.Speaker.begin();
   myBoard = M5.getBoard();
 
+#if !defined(ARDUINO_WIO_TERMINAL)
   // Setup M5Dial
   if (myBoard == m5gfx::board_M5Dial) {
     M5Dial.begin(cfg, true, false);
   }
+#endif
 
 #if !defined(CONFIG_IDF_TARGET_ESP32S3)
   // Init FastLED(NeoPixel).
@@ -1239,6 +1246,7 @@ void loop() {
       pCharacteristic[4]->setValue(action, 20);
       pCharacteristic[4]->notify();
 
+#if !defined(ARDUINO_WIO_TERMINAL)
       //// Send touch panel information
       // Get touch panel data.
       float tx;
@@ -1293,7 +1301,6 @@ void loop() {
         pCharacteristic[4]->notify();
       }
 
-#if !defined(ARDUINO_WIO_TERMINAL)
       if (myBoard == m5gfx::board_M5Stack) {
         // keyboard input for M5Stack Faces
         if (digitalRead(5) == LOW) {
