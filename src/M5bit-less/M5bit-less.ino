@@ -31,6 +31,7 @@ pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
 #include <M5Dial.h>
+#include <M5StackUpdater.h>
 
 //// Global variables for M5Stack.
 // Board name
@@ -868,6 +869,8 @@ void setup_M5Stack() {
   // Init M5Stack.
   auto cfg = M5.config();
   M5.begin(cfg);
+  checkSDUpdater(SD);
+
   M5.Display.init();
 
   // Init speaker.
