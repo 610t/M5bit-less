@@ -31,6 +31,15 @@ pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
 #include <M5Dial.h>
+#include <M5StackUpdater.h>
+
+// Servo
+#include <ServoEasing.hpp>
+#define START_DEGREE_VALUE_X 90
+#define START_DEGREE_VALUE_Y 85
+ServoEasing servo_x;
+ServoEasing servo_y;
+
 
 //// Global variables for M5Stack.
 // Board name
@@ -357,6 +366,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
 
     log_i("CMD_PIN\n");
     log_i(" pin:%d, dat:%d\n", pin_num, pin_value);
+    Serial.printf(" pin:%d, cmd:%d, dat:%d\n", pin_num, pin_cmd, pin_value);
 
     switch (pin_cmd) {
       case 0x01:
@@ -375,9 +385,16 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case 0x03:
         // SERVO
         log_i(" SERVO\n");
-        log_i("  range:%d, center:%d\n", cmd_str[3], cmd_str[4]);
+        log_i("  range:%d, center:%d\n", cmd_str[2], cmd_str[3]);
+        Serial.printf("  2:%d, 3:%d\n", cmd_str[2], cmd_str[3]);
         pin_mode[pin_num] = PIN_SERVO;
-        analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
+        if (pin_num == 0) {
+          servo_x.setEaseTo(cmd_str[3] << 8 | cmd_str[2]);
+        } else if (pin_num == 1) {
+          servo_y.setEaseTo(cmd_str[3] << 8 | cmd_str[2]);
+        }
+        synchronizeAllServosStartAndWaitForAllServosToStop();
+        //analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
         break;
       case 0x04:
         // PULL
@@ -868,6 +885,8 @@ void setup_M5Stack() {
   // Init M5Stack.
   auto cfg = M5.config();
   M5.begin(cfg);
+  checkSDUpdater(SD);
+
   M5.Display.init();
 
   // Init speaker.
@@ -977,6 +996,9 @@ void setup_pins() {
 
     default:
       break;
+
+      pin_mode[0] = PIN_SERVO;
+      pin_mode[1] = PIN_SERVO;
   }
 #endif
 }
@@ -1116,6 +1138,19 @@ void setup_WioTerminal() {
 #endif
 }
 
+void setup_servo() {
+  // Servo
+  servo_x.attach(pin[0], START_DEGREE_VALUE_X, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+  servo_y.attach(pin[1], START_DEGREE_VALUE_Y, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+  servo_x.setEasingType(EASE_QUADRATIC_IN_OUT);
+  servo_y.setEasingType(EASE_QUADRATIC_IN_OUT);
+  setSpeedForAllServos(30);
+
+  servo_x.setEaseTo(START_DEGREE_VALUE_X);
+  servo_y.setEaseTo(START_DEGREE_VALUE_Y);
+  synchronizeAllServosStartAndWaitForAllServosToStop();
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -1129,6 +1164,7 @@ void setup() {
   screen_h = M5.Lcd.height();
 #endif
   setup_pins();
+  setup_servo();
   setup_BLE();
 }
 
