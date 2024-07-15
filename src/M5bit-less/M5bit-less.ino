@@ -26,6 +26,14 @@ enum pin_mode_t {
   PIN_EVENT
 };
 
+enum {
+  CMD_DIGITAL_OUTPUT = 1,
+  CMD_PWM,
+  CMD_SERVO,
+  CMD_PULL,
+  CMD_EVENT
+};
+
 pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
 
 #if !defined(ARDUINO_WIO_TERMINAL)
@@ -369,20 +377,20 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     Serial.printf(" pin:%d, cmd:%d, dat:%d\n", pin_num, pin_cmd, pin_value);
 
     switch (pin_cmd) {
-      case 0x01:
+      case CMD_DIGITAL_OUTPUT:
         // OUTPUT
         log_i(" OUTPUT\n");
         pin_mode[pin_num] = PIN_DIGITAL_OUTPUT;
         pinMode(pin[pin_num], OUTPUT);
         digitalWrite(pin[pin_num], pin_value);
         break;
-      case 0x02:
+      case CMD_PWM:
         // PWM
         log_i(" PWM\n");
         pin_mode[pin_num] = PIN_PWM;
         analogWrite(pin[pin_num], pin_value);
         break;
-      case 0x03:
+      case CMD_SERVO:
         // SERVO
         log_i(" SERVO\n");
         log_i("  range:%d, center:%d\n", cmd_str[2], cmd_str[3]);
@@ -396,12 +404,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         synchronizeAllServosStartAndWaitForAllServosToStop();
         //analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
         break;
-      case 0x04:
+      case CMD_PULL:
         // PULL
         log_i(" PULL\n");
         pin_mode[pin_num] = PIN_PULL;
         break;
-      case 0x05:
+      case CMD_EVENT:
         // EVENT
         log_i(" EVENT\n");
         pin_mode[pin_num] = PIN_EVENT;
