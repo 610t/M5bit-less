@@ -34,7 +34,8 @@ enum {
   CMD_EVENT
 };
 
-pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
+//pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
+pin_mode_t pin_mode[17] = { PIN_SERVO };
 
 #if !defined(ARDUINO_WIO_TERMINAL)
 #include <M5Unified.h>
@@ -45,9 +46,7 @@ pin_mode_t pin_mode[17] = { PIN_ANALOG_INPUT };
 #include <ServoEasing.hpp>
 #define START_DEGREE_VALUE_X 90
 #define START_DEGREE_VALUE_Y 85
-ServoEasing servo_x;
-ServoEasing servo_y;
-
+ServoEasing servo;
 
 //// Global variables for M5Stack.
 // Board name
@@ -360,6 +359,17 @@ void draw_openmouth() {
   Draw.fillRect(norm_x(140), norm_y(130), norm_x(40), norm_y(40), TFT_WHITE);
 }
 
+// for servo handling
+void moveServo(int servo_angle, int pin_num) {
+  Serial.printf(" Servo angle: %d, Pin num: %d\n", servo_angle, pin_num);
+
+  servo.attach(pin[pin_num], START_DEGREE_VALUE_X, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+  servo.setEasingType(EASE_QUADRATIC_IN_OUT);
+  setSpeedForAllServos(30);
+  servo.startEaseTo(servo_angle);
+}
+
+
 // Microbit More Command handling
 class CmdCallbacks : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
@@ -371,6 +381,10 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     char pin_cmd = (cmd_str[0] & 0x0f);
     int pin_num = cmd_str[1];
     int pin_value = cmd_str[2];
+    // for servo
+    int servo_angle = cmd_str[3] << 8 | cmd_str[2];
+    int servo_range = cmd_str[5] << 8 | cmd_str[4];
+    int servo_center = cmd_str[7] << 8 | cmd_str[6];
 
     log_i("CMD_PIN\n");
     log_i(" pin:%d, dat:%d\n", pin_num, pin_value);
@@ -393,16 +407,12 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
       case CMD_SERVO:
         // SERVO
         log_i(" SERVO\n");
-        log_i("  range:%d, center:%d\n", cmd_str[2], cmd_str[3]);
-        Serial.printf("  2:%d, 3:%d\n", cmd_str[2], cmd_str[3]);
+        log_i("  angle:%d, range:%d, center:%d\n", servo_angle, servo_range, servo_center);
+        Serial.printf("  angle:%d, range:%d, center:%d\n", servo_angle, servo_range, servo_center);
         pin_mode[pin_num] = PIN_SERVO;
-        if (pin_num == 0) {
-          servo_x.setEaseTo(cmd_str[3] << 8 | cmd_str[2]);
-        } else if (pin_num == 1) {
-          servo_y.setEaseTo(cmd_str[3] << 8 | cmd_str[2]);
+        if (pin_num == 0 || pin_num == 1) {
+          moveServo(servo_angle, pin_num);
         }
-        synchronizeAllServosStartAndWaitForAllServosToStop();
-        //analogWrite(pin[pin_num], pin_value / 1.80 + 2.5);  // The pin_value means angle for servo.
         break;
       case CMD_PULL:
         // PULL
@@ -852,7 +862,7 @@ class ActionCallbacks : public BLECharacteristicCallbacks {
 class AnalogPinCallback0 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     int r = 0;
-    r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
+    //r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
     log_i("Analog Pin0 Read:%d\n", r);
 
     analog[0] = (r & 0xff);
@@ -865,7 +875,7 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
 class AnalogPinCallback1 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     int r = 0;
-    r = map(analogRead(pin[1]), 0, 4095, 0, 1023);
+    //r = map(analogRead(pin[1]), 0, 4095, 0, 1023);
     log_i("Analog Pin1 Read:%d\n", r);
 
     analog[0] = (r & 0xff);
@@ -878,7 +888,7 @@ class AnalogPinCallback1 : public BLECharacteristicCallbacks {
 class AnalogPinCallback2 : public BLECharacteristicCallbacks {
   void onRead(BLECharacteristic *pCharacteristic) {
     int r = 0;
-    r = map(analogRead(pin[2]), 0, 4095, 0, 1023);
+    //r = map(analogRead(pin[2]), 0, 4095, 0, 1023);
     log_i("Analog Pin2 Read:%d\n", r);
 
     analog[0] = (r & 0xff);
@@ -1148,15 +1158,8 @@ void setup_WioTerminal() {
 
 void setup_servo() {
   // Servo
-  servo_x.attach(pin[0], START_DEGREE_VALUE_X, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
-  servo_y.attach(pin[1], START_DEGREE_VALUE_Y, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
-  servo_x.setEasingType(EASE_QUADRATIC_IN_OUT);
-  servo_y.setEasingType(EASE_QUADRATIC_IN_OUT);
-  setSpeedForAllServos(30);
-
-  servo_x.setEaseTo(START_DEGREE_VALUE_X);
-  servo_y.setEaseTo(START_DEGREE_VALUE_Y);
-  synchronizeAllServosStartAndWaitForAllServosToStop();
+  moveServo(START_DEGREE_VALUE_X, 0);
+  moveServo(START_DEGREE_VALUE_Y, 1);
 }
 
 void setup() {
