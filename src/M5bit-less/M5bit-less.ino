@@ -46,7 +46,8 @@ pin_mode_t pin_mode[17] = { PIN_SERVO };
 #include <ServoEasing.hpp>
 #define START_DEGREE_VALUE_X 90
 #define START_DEGREE_VALUE_Y 85
-ServoEasing servo;
+ServoEasing servo_x;
+ServoEasing servo_y;
 
 //// Global variables for M5Stack.
 // Board name
@@ -363,10 +364,17 @@ void draw_openmouth() {
 void moveServo(int servo_angle, int pin_num) {
   Serial.printf(" Servo angle: %d, Pin num: %d\n", servo_angle, pin_num);
 
-  servo.attach(pin[pin_num], START_DEGREE_VALUE_X, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
-  servo.setEasingType(EASE_QUADRATIC_IN_OUT);
-  setSpeedForAllServos(30);
-  servo.startEaseTo(servo_angle);
+  if (pin_num == 0) {
+    servo_x.attach(pin[pin_num], START_DEGREE_VALUE_X, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    servo_x.setEasingType(EASE_QUADRATIC_IN_OUT);
+    setSpeedForAllServos(30);
+    servo_x.startEaseTo(servo_angle);
+  } else if (pin_num == 1) {
+    servo_y.attach(pin[pin_num], START_DEGREE_VALUE_Y, DEFAULT_MICROSECONDS_FOR_0_DEGREE, DEFAULT_MICROSECONDS_FOR_180_DEGREE);
+    servo_y.setEasingType(EASE_QUADRATIC_IN_OUT);
+    setSpeedForAllServos(30);
+    servo_y.startEaseTo(servo_angle);
+  }
 }
 
 
