@@ -869,7 +869,7 @@ void setup_M5Stack() {
   // Init M5Stack.
   auto cfg = M5.config();
   M5.begin(cfg);
-  checkSDUpdater(SD);
+  checkSDUpdater(SD, MENU_BIN, 2000);
 
   M5.Display.init();
 
