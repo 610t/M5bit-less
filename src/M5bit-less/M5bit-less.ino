@@ -869,7 +869,10 @@ void setup_M5Stack() {
   // Init M5Stack.
   auto cfg = M5.config();
   M5.begin(cfg);
-  checkSDUpdater(SD, MENU_BIN, 2000);
+  // for support BinsPack-for-StackChan-Core2 https://github.com/NoRi-230401/BinsPack-for-StackChan-Core2
+  if (m5gfx::board_M5StackCore2) {
+    checkSDUpdater(SD, MENU_BIN, 2000);
+  }
 
   M5.Display.init();
 
