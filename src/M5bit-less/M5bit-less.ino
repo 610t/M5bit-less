@@ -1124,6 +1124,7 @@ void setup_WioTerminal() {
 
 void setup() {
   Serial.begin(115200);
+  Serial2.begin(115200);
 
 #if defined(ARDUINO_WIO_TERMINAL)
   setup_WioTerminal();
@@ -1332,5 +1333,56 @@ void loop() {
 
       old_label_time = label_time;
     }
+  }
+
+  //// Get data from Serial2
+  //     Data format is "label:value".
+  //     If value is full float format, pass data as float.
+  //     Otherwise pass data as string.
+  int av = Serial2.available();
+  // When serial2 data is available...
+  while (av > 0) {
+    String label = Serial2.readStringUntil(':');   // The left side of ':'.
+    String value = Serial2.readStringUntil('\n');  // The right side of ':'.
+    av = Serial2.available();                      // Are there more data?
+
+    // Convert value to float
+    bool is_float;  // Is data float?
+    char *stopstr;
+    float f_value = strtod(value.c_str(), &stopstr);
+    if (stopstr[0] == NULL) {
+      is_float = true;
+    } else {
+      is_float = false;
+    }
+
+    memset((char *)(action), 0, 20);  // clear action buffer
+
+    const char *label_str = label.c_str();
+    strncpy((char *)action, label_str, 7);
+
+    if (is_float) {
+      // Data is passed as float.
+      action[19] = DATA_NUMBER;  // Data send as number.
+
+      cd.f = f_value;
+      action[8] = cd.b[0];
+      action[9] = cd.b[1];
+      action[10] = cd.b[2];
+      action[11] = cd.b[3];
+    } else {
+      // Data is passed as String(TEXT).
+      action[19] = DATA_TEXT;  // Data send as text.
+
+      // The data buffer can handle 18 - 8 characters.
+      const char *buf = value.c_str();
+      for (int i = 0; i < av && i + 8 < 19; i++) {
+        action[i + 8] = buf[i];
+      }
+    }
+
+    // Send data to Scratch with label left side of ':'.
+    pCharacteristic[4]->setValue(action, 20);
+    pCharacteristic[4]->notify();
   }
 };
