@@ -912,78 +912,12 @@ void setup_pins() {
   // for Analog input.
   pinMode(pin[0], INPUT);
   pinMode(pin[1], INPUT);
-#else  // M5Stack
-  //// GPIO
-
-// Dirty hack for CoreS3, M5Dial and StampS3
-#if !defined(GPIO_NUM_22)
-#define GPIO_NUM_22 22
-#endif
-#if !defined(GPIO_NUM_25)
-#define GPIO_NUM_25 25
-#endif
-
-  switch (myBoard) {
-    case m5gfx::board_M5Atom:
-    case m5gfx::board_M5AtomU:
-    case m5gfx::board_M5AtomPsram:
-      pin[0] = GPIO_NUM_32;
-      pin[1] = GPIO_NUM_26;
-      break;
-
-    case m5gfx::board_M5Stack:
-      pin[0] = GPIO_NUM_36;  // Port.B
-      pin[1] = GPIO_NUM_26;  // Port.B
-      pin[2] = GPIO_NUM_22;  // Port.A
-      pin[8] = GPIO_NUM_21;  // Port.A
-      break;
-
-    case m5gfx::board_M5StackCore2:
-    case m5gfx::board_M5Tough:
-      pin[0] = GPIO_NUM_33;  // Port.A
-      pin[1] = GPIO_NUM_32;  // Port.A
-      pin[2] = GPIO_NUM_36;  // Port.B
-      pin[8] = GPIO_NUM_26;  // Port.B
-      break;
-
-    case m5gfx::board_M5StickC:
-    case m5gfx::board_M5StickCPlus:
-    case m5gfx::board_M5StickCPlus2:
-    case m5gfx::board_M5StackCoreInk:
-      pin[0] = GPIO_NUM_33;  // Port.A (Universal)
-      pin[1] = GPIO_NUM_32;  // Port.A (Universal)
-      break;
-
-    case m5gfx::board_M5Paper:
-      pin[0] = GPIO_NUM_32;  // Port.A
-      pin[1] = GPIO_NUM_25;  // Port.A
-      pin[2] = GPIO_NUM_33;  // Port.B
-      pin[8] = GPIO_NUM_26;  // Port.B
-      break;
-
-    case m5gfx::board_M5StackCoreS3:
-      pin[0] = GPIO_NUM_1;  // Port.A
-      pin[1] = GPIO_NUM_2;  // Port.A
-      pin[2] = GPIO_NUM_8;  // Port.B
-      pin[8] = GPIO_NUM_9;  // Port.B
-      break;
-
-    case m5gfx::board_M5Dial:
-      pin[0] = GPIO_NUM_1;   // Port.A
-      pin[1] = GPIO_NUM_2;   // Port.A
-      pin[2] = GPIO_NUM_15;  // Port.B
-      pin[8] = GPIO_NUM_13;  // Port.B
-      break;
-
-    case m5gfx::board_M5AtomS3:
-    case m5gfx::board_M5Cardputer:
-      pin[0] = GPIO_NUM_1;  // Port.A (Universal)
-      pin[1] = GPIO_NUM_2;  // Port.A (Universal)
-      break;
-
-    default:
-      break;
-  }
+#else
+  // M5Stack GPIO
+  pin[0] = M5.getPin(m5::pin_name_t::port_a_pin1);
+  pin[1] = M5.getPin(m5::pin_name_t::port_a_pin2);
+  pin[2] = M5.getPin(m5::pin_name_t::port_b_pin1);
+  pin[8] = M5.getPin(m5::pin_name_t::port_b_pin2);
 #endif
 }
 
