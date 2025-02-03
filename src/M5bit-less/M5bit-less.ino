@@ -99,10 +99,7 @@ void mic_record_task(void *arg) {
 #define Draw M5.Lcd
 
 //// BLE related headers.
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
+#include <NimBLEDevice.h>
 
 //// BLE characteristics.
 #define MBIT_MORE_SERVICE "0b50f3e4-607f-4151-9091-7d008d6ffc5c"
@@ -165,8 +162,8 @@ uint8_t action[] = {
 // ANALOG PIN 2 byte
 uint8_t analog[] = { 0x00, 0x00 };
 
-BLEServer *pServer = NULL;
-BLECharacteristic *pCharacteristic[9] = { 0 };
+NimBLEServer *pServer = NULL;
+NimBLECharacteristic *pCharacteristic[9] = { 0 };
 bool deviceConnected = false;
 
 // for pixel pattern
@@ -221,29 +218,29 @@ void fillScreen(int c) {
   }
 };
 
-class MyServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer *pServer) {
+class MyServerCallbacks : public NimBLEServerCallbacks {
+  void onConnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo) override {
     log_i("connect\n");
     deviceConnected = true;
     fillScreen(TFT_BLACK);
   };
 
-  void onDisconnect(BLEServer *pServer) {
+  void onDisconnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo, int reason) override {
     log_i("disconnect\n");
     deviceConnected = false;
     ESP.restart();
   }
-};
+} myServerCallbacks;
 
 // dummy callback
-class DummyCallbacks : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class DummyCallbacks : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     log_i("DUMMY Read\n");
   }
-  void onWrite(BLECharacteristic *pCharacteristic) {
+  void onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     log_i("DUMMY Write\n");
   }
-};
+} dummyCallbacks;
 
 // for cmd
 // Global variable for drawing graphics using data & label.
@@ -303,8 +300,8 @@ void draw_openmouth() {
 }
 
 // Microbit More Command handling
-class CmdCallbacks : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class CmdCallbacks : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     log_i("CMD read\n");
     pCharacteristic->setValue(cmd, 20);
   }
@@ -617,7 +614,7 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
     label_stackchan_cmd(label_str, data_str);
   }
 
-  void onWrite(BLECharacteristic *pCharacteristic) {
+  void onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     log_i("CMD write\n");
     ////// MUST implement!!
     //// CMD_CONFIG 0x00
@@ -659,11 +656,11 @@ class CmdCallbacks : public BLECharacteristicCallbacks {
         break;
     }
   }
-};
+} cmdCallbacks;
 
 // for state
-class StateCallbacks : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class StateCallbacks : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     float temp = 0;
     int r0 = 0, r1 = 0;
 
@@ -689,13 +686,13 @@ class StateCallbacks : public BLECharacteristicCallbacks {
       state[6] = (random(256) & 0xff);  // Random sensor value for soundlevel
     }
 
-    M5.Imu.getTemp(&temp);            // get temperature from IMU
-    state[4] = (random(256) & 0xff);  // Random sensor value for lightlevel
+    M5.Imu.getTemp(&temp);                  // get temperature from IMU
+    state[4] = (random(256) & 0xff);        // Random sensor value for lightlevel
     state[5] = ((int)(temp + 128) & 0xff);  // temperature(+128)
     log_i("STATE read %s", (char *)state);
     pCharacteristic->setValue(state, 7);
   }
-};
+} stateCallbacks;
 
 // for accelerometer related values
 #define ACC_MULT 512
@@ -708,15 +705,15 @@ float gx, gy, gz;
 float pitch, roll, yaw;
 
 void updateIMU() {
-  M5.Imu.getAccel(&ax, &ay, &az);     // get accel
-  M5.Imu.getGyro(&gx, &gy, &gz);      // get gyro
+  M5.Imu.getAccel(&ax, &ay, &az);  // get accel
+  M5.Imu.getGyro(&gx, &gy, &gz);   // get gyro
   iax = (int16_t)(ax * ACC_MULT);
   iay = (int16_t)(ay * ACC_MULT);
   iaz = (int16_t)(az * ACC_MULT);
 }
 
-class MotionCallbacks : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class MotionCallbacks : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     updateIMU();
 
     motion[0] = ((int)(pitch * ACC_MULT) & 0xff);
@@ -738,19 +735,19 @@ class MotionCallbacks : public BLECharacteristicCallbacks {
     }
     log_i("MOTION read: %s\n", msg);
   }
-};
+} motionCallbacks;
 
 // for button
-class ActionCallbacks : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class ActionCallbacks : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     log_i("BTN read\n");
     pCharacteristic->setValue("Read me!!");  // dummy data
   }
-};
+} actionCallbacks;
 
 // for Analog pin
-class AnalogPinCallback0 : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class AnalogPinCallback0 : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     int r = 0;
     r = map(analogRead(pin[0]), 0, 4095, 0, 1023);
     log_i("Analog Pin0 Read:%d\n", r);
@@ -760,10 +757,10 @@ class AnalogPinCallback0 : public BLECharacteristicCallbacks {
 
     pCharacteristic->setValue(analog, 2);
   }
-};
+} analogPinCallback0;
 
-class AnalogPinCallback1 : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class AnalogPinCallback1 : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     int r = 0;
     r = map(analogRead(pin[1]), 0, 4095, 0, 1023);
     log_i("Analog Pin1 Read:%d\n", r);
@@ -773,10 +770,10 @@ class AnalogPinCallback1 : public BLECharacteristicCallbacks {
 
     pCharacteristic->setValue(analog, 2);
   }
-};
+} analogPinCallback1;
 
-class AnalogPinCallback2 : public BLECharacteristicCallbacks {
-  void onRead(BLECharacteristic *pCharacteristic) {
+class AnalogPinCallback2 : public NimBLECharacteristicCallbacks {
+  void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) override {
     int r = 0;
     r = map(analogRead(pin[2]), 0, 4095, 0, 1023);
     log_i("Analog Pin2 Read:%d\n", r);
@@ -786,7 +783,7 @@ class AnalogPinCallback2 : public BLECharacteristicCallbacks {
 
     pCharacteristic->setValue(analog, 2);
   }
-};
+} analogPinCallback2;
 
 void setup_M5Stack() {
   // Init M5Stack.
@@ -856,75 +853,65 @@ void setup_BLE() {
 
   log_i("BLE start.\n");
   log_i("%s\n", adv_str);
-  BLEDevice::init(adv_str);
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-  BLEService *pService = pServer->createService(BLEUUID(MBIT_MORE_SERVICE), 27);
+  NimBLEDevice::init(adv_str);
+  NimBLEServer *pServer = NimBLEDevice::createServer();
+  pServer->setCallbacks(&myServerCallbacks);
+  NimBLEService *pService = pServer->createService(BLEUUID(MBIT_MORE_SERVICE));
 
   // CMD
   pCharacteristic[0] = pService->createCharacteristic(
     MBIT_MORE_CH_COMMAND,
-    BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-  pCharacteristic[0]->setCallbacks(new CmdCallbacks());
-  pCharacteristic[0]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR);
+  pCharacteristic[0]->setCallbacks(&cmdCallbacks);
 
   // STATE
   pCharacteristic[1] = pService->createCharacteristic(
     MBIT_MORE_CH_STATE,
-    BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[1]->setCallbacks(new StateCallbacks());
-  pCharacteristic[1]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ);
+  pCharacteristic[1]->setCallbacks(&stateCallbacks);
 
   // MOTION
   pCharacteristic[2] = pService->createCharacteristic(
     MBIT_MORE_CH_MOTION,
-    BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[2]->setCallbacks(new MotionCallbacks());
-  pCharacteristic[2]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ);
+  pCharacteristic[2]->setCallbacks(&motionCallbacks);
 
   pCharacteristic[3] = pService->createCharacteristic(
     MBIT_MORE_CH_PIN_EVENT,
-    BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-  pCharacteristic[3]->setCallbacks(new DummyCallbacks());
-  pCharacteristic[3]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  pCharacteristic[3]->setCallbacks(&dummyCallbacks);
 
   // ACTION
   pCharacteristic[4] = pService->createCharacteristic(
     MBIT_MORE_CH_ACTION_EVENT,
-    BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-  pCharacteristic[4]->setCallbacks(new ActionCallbacks());
-  pCharacteristic[4]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  pCharacteristic[4]->setCallbacks(&actionCallbacks);
 
   // PINS
   pCharacteristic[5] = pService->createCharacteristic(
     MBIT_MORE_CH_ANALOG_IN_P0,
-    BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[5]->setCallbacks(new AnalogPinCallback0());
-  pCharacteristic[5]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ);
+  pCharacteristic[5]->setCallbacks(&analogPinCallback0);
 
   pCharacteristic[6] = pService->createCharacteristic(
     MBIT_MORE_CH_ANALOG_IN_P1,
-    BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[6]->setCallbacks(new AnalogPinCallback1());
-  pCharacteristic[6]->addDescriptor(new BLE2902());
+    NIMBLE_PROPERTY::READ);
+  pCharacteristic[6]->setCallbacks(&analogPinCallback1);
 
   pCharacteristic[7] = pService->createCharacteristic(
     MBIT_MORE_CH_ANALOG_IN_P2,
-    BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[7]->setCallbacks(new AnalogPinCallback2());
-  pCharacteristic[7]->addDescriptor(new BLE2902());
-
+    NIMBLE_PROPERTY::READ);
+  pCharacteristic[7]->setCallbacks(&analogPinCallback2);
 
   // MESSAGE (only for v2)
   pCharacteristic[8] = pService->createCharacteristic(
     MBIT_MORE_CH_MESSAGE,
-    BLECharacteristic::PROPERTY_READ);
-  pCharacteristic[8]->setCallbacks(new DummyCallbacks());
-  pCharacteristic[8]->addDescriptor(new BLE2902());
-
+    NIMBLE_PROPERTY::READ);
+  pCharacteristic[8]->setCallbacks(&dummyCallbacks);
 
   pService->start();
-  BLEAdvertising *pAdvertising = pServer->getAdvertising();
+  NimBLEAdvertising *pAdvertising = pServer->getAdvertising();
+  pAdvertising->setName(adv_str);
   pAdvertising->start();
 }
 
